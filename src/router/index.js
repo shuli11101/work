@@ -14,7 +14,11 @@ const router = createRouter({
         },
         {
           path: '/auto-complete',
-          component: () => import('@/views/AutoComplete.vue'),
+          component: () => import('@/views/AutoComplete/AutoComplete.vue'),
+        },
+        {
+          path: '/auto-complete/select-object',
+          component: () => import('@/views/AutoComplete/SelectObject.vue'),
         }
       ]
     }

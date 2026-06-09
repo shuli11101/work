@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
+    "axios": "^1.17.0",
     "echarts": "^6.1.0",
     "element-plus": "^2.14.1",
     "pinia": "^3.0.4",
@@ -29,6 +30,7 @@
     "eslint-plugin-oxlint": "~1.60.0",
     "eslint-plugin-vue": "~10.8.0",
     "globals": "^17.5.0",
+    "mockjs": "^1.1.0",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.60.0",
     "prettier": "3.8.3",
