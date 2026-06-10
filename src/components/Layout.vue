@@ -26,7 +26,7 @@ function toggleCollapse() {
 </script>
 
 <template>
-  <el-container style="height: 100vh">
+  <el-container class="app-content">
     <el-aside :width="isCollapse ? '0px' : '200px'"
       style="background-color: #304156; transition: width 0.3s; overflow: hidden">
       <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" background-color="#304156"
@@ -57,14 +57,22 @@ function toggleCollapse() {
           <el-breadcrumb-item v-if="currentLabel">AI</el-breadcrumb-item>
         </el-breadcrumb>
       </el-header>
-      <el-main style="background-color: #fff">
-        <router-view />
+      <el-main style="background-color: #fff; display: flex; justify-content: center;">
+        <div class="page-container">
+          <router-view />
+        </div>
       </el-main>
     </el-container>
   </el-container>
 </template>
 
 <style scoped>
+.app-content {
+  width: 1920px;
+  height: 1080px;
+  margin: 0 auto;
+}
+
 .el-aside {
   overflow-y: auto;
 }
@@ -75,5 +83,10 @@ function toggleCollapse() {
 
 .el-header {
   padding: 0 20px;
+}
+
+.page-container {
+  width: 100%;
+  height: 100%;
 }
 </style>

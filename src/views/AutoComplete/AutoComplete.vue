@@ -1,21 +1,30 @@
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
+
 import { useRouter } from 'vue-router'
-import { Target, Layers, BookOpen, Trophy, Puzzle } from '@icon-park/vue-next'
 import { Check } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import BaseCard from './BaseCard.vue'
 import RightCard from './RightCard.vue'
+import spriteImage1 from '../../assets/picture/001-removebg-preview.png'
+import spriteImage2 from '../../assets/picture/002-removebg-preview.png'
+import spriteImage3 from '../../assets/picture/003-removebg-preview.png'
+import spriteImage4 from '../../assets/picture/004-removebg-preview.png'
+import spriteImage5 from '../../assets/picture/005-removebg-preview.png'
+
+
+
+const spriteImages = [spriteImage1, spriteImage2, spriteImage3, spriteImage4, spriteImage5]
 
 const router = useRouter()
 
 // 功能卡片数据
 const features = [
-  { title: '靶向补弱', description: '基于学情数据，针对薄弱知识点智能组卷，精准提升', icon: Target, iconFill: '#4e9dff', backgroundColor: '#f3f7fd' },
-  { title: '分层作业', description: '根据学生水平分层出题，因材施教，提高效率', icon: Layers, iconFill: '#00e1ca', backgroundColor: '#f2fdf9' },
-  { title: '单元复习', description: '聚焦单元知识点覆盖，巩固学习成果，提升效率', icon: BookOpen, iconFill: 'url(#orangeGrad)', backgroundColor: '#fef8f3' },
-  { title: '单元冲刺', description: '模拟真是考试环境，提升应试能力，冲刺高分', icon: Trophy, iconFill: 'url(#purpleGrad)', backgroundColor: '#f9f6ff' },
-  { title: '自定义组合', description: '自由配置题目策略，满足个性化需求', icon: Puzzle, iconFill: 'url(#blueGrad)', backgroundColor: '#f5f9ff' },
+  { title: '靶向补弱', description: '基于学情数据，针对薄弱知识点智能组卷，精准提升', iconIndex: 0, backgroundColor: '#f3f7fd' },
+  { title: '分层作业', description: '根据学生水平分层出题，因材施教，提高效率', iconIndex: 1, backgroundColor: '#f2fdf9' },
+  { title: '单元复习', description: '聚焦单元知识点覆盖，巩固学习成果，提升效率', iconIndex: 2, backgroundColor: '#fef8f3' },
+  { title: '单元冲刺', description: '模拟真是考试环境，提升应试能力，冲刺高分', iconIndex: 3, backgroundColor: '#f9f6ff' },
+  { title: '自定义组合', description: '自由配置题目策略，满足个性化需求', iconIndex: 4, backgroundColor: '#f5f9ff' },
 ]
 
 // 临时数据
@@ -234,9 +243,7 @@ onUnmounted(() => {
               <div @click="selectPurpose(item)" v-for="item in features" :key="item.title" class="feature-item"
                 :class="{ selected: corePurpose?.title === item.title }"
                 :style="{ backgroundColor: item.backgroundColor }">
-                <el-icon :size="48" class="feature-icon">
-                  <component :is="item.icon" theme="outline" :fill="item.iconFill" />
-                </el-icon>
+                <div class="sprite-icon" :style="{ backgroundImage: `url(${spriteImages[item.iconIndex]})` }"></div>
                 <div class="feature-info">
                   <h3 class="feature-title">{{ item.title }}</h3>
                   <p class="feature-description">{{ item.description }}</p>
@@ -282,50 +289,50 @@ onUnmounted(() => {
               <div class="divider"></div>
 
               <!-- 基础信息设置 -->
-              <div class="section-header">
+              <div class=" section-header">
                 <span class="section-bar"></span>
                 <h4 class="section-title">基础信息设置</h4>
               </div>
               <el-form ref="baseFormRef" class="form-grid" label-position="top" :model="baseForm" :rules="baseRules">
                 <el-form-item label="学段" prop="levelSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.levelSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.levelSubmit">
                     <el-option label="小学" value="小学" key="小学"></el-option>
                     <el-option label="初中" value="初中" key="初中"></el-option>
                     <el-option label="高中" value="高中" key="高中"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="年级" prop="gradeSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.gradeSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.gradeSubmit">
                     <el-option v-for="item in gradeMap[baseForm.levelSubmit]" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="学科" prop="subjectSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.subjectSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.subjectSubmit">
                     <el-option v-for="item in subjectMap[baseForm.levelSubmit]" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="选择班级" prop="classSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.classSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.classSubmit">
                     <el-option v-for="item in classes" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="教材" prop="textbookSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.textbookSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.textbookSubmit">
                     <el-option v-for="item in textBooksMap" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="章节范围" prop="chapterRangeSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.chapterRangeSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.chapterRangeSubmit">
                     <el-option v-for="item in chapterRangeMap" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
                 </el-form-item>
                 <el-form-item label="试卷名称" prop="paperNameSubmit">
-                  <el-select placeholder="请选择" v-model="baseForm.paperNameSubmit">
+                  <el-select :teleported="false" placeholder="请选择" v-model="baseForm.paperNameSubmit">
                     <el-option v-for="item in paperNameMap" :key="item.key" :label="item.label"
                       :value="item.value"></el-option>
                   </el-select>
@@ -341,7 +348,8 @@ onUnmounted(() => {
                 <div class="rule-body">
                   <div class="rule-item">
                     <label>总分</label>
-                    <el-select placeholder="请选择" v-model="ruleForm.totalScoreSubmit" class="rule-select">
+                    <el-select :teleported="false" placeholder="请选择" v-model="ruleForm.totalScoreSubmit"
+                      class="rule-select">
                       <el-option v-for="item in totalScore" :key="item.key" :label="item.label"
                         :value="item.value"></el-option>
                     </el-select>
@@ -349,7 +357,8 @@ onUnmounted(() => {
                   <div class="rule-divider"></div>
                   <div class="rule-item">
                     <label>题目难易度</label>
-                    <el-select class="difficulty-select" placeholder="请选择" v-model="ruleForm.difficultySubmitSubmit">
+                    <el-select :teleported="false" class="difficulty-select" placeholder="请选择"
+                      v-model="ruleForm.difficultySubmitSubmit">
                       <el-option v-for="item in difficulty" :key="item.key" :label="item.label"
                         :value="item.value"></el-option>
                     </el-select>
@@ -357,11 +366,13 @@ onUnmounted(() => {
                   <div class="rule-divider"></div>
                   <div class="rule-item">
                     <label style="text-align: center;">同题型连续出题</label>
+                    <el-switch v-model="ruleForm.sameTypeSubmit" active-value="false" inactive-value="true" />
                     <el-switch v-model="ruleForm.sameTypeSubmit" active-value="true" inactive-value="false" />
                   </div>
                   <div class="rule-divider"></div>
                   <div class="rule-item">
                     <label style="text-align: center;">避免重复知识点</label>
+                    <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="false" inactive-value="true" />
                     <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="true" inactive-value="false" />
                   </div>
                 </div>
@@ -459,7 +470,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .home {
-  padding: 10px;
+  padding: 6px;
   padding-top: 0;
   height: 100%;
   box-sizing: border-box;
@@ -509,10 +520,10 @@ onUnmounted(() => {
 
 .left-cards {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0;
+  gap: 15px;
 }
 
 .card {
@@ -520,19 +531,32 @@ onUnmounted(() => {
 }
 
 .top-card {
-  flex: 0 0 auto;
+  width: 100%;
+  height: 322px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  padding-top: 24px;
 }
 
 .form-card {
-  flex: 1;
+  width: 100%;
+  height: 537px;
+  flex-shrink: 0;
 
-  :deep(.el-card__body) {
+
+  overflow :deep(.el-card__body) {
     padding-top: 10px;
   }
 }
 
+:deep(.el-card__body) {
+  padding-top: 0px;
+}
+
 .card-right {
-  width: 440px;
+  width: 521px;
+  height: 875px;
   flex-shrink: 0;
 }
 
@@ -712,23 +736,34 @@ onUnmounted(() => {
 /* ========== 功能卡片 ========== */
 .feature-list {
   display: flex;
-  gap: 8px;
-  padding: 10px;
+  gap: 12px;
+}
+
+.sprite-icon {
+  width: 80px;
+  height: 80px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
 }
 
 .feature-item {
   position: relative;
+  z-index: 1;
   display: flex;
+  max-width: 224px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 12px 10px;
+  gap: 12px;
+  padding: 0 12px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
   flex: 1;
-  min-height: 160px;
+  min-height: 274px;
+  margin: 0;
 
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -739,10 +774,6 @@ onUnmounted(() => {
   }
 }
 
-.feature-icon {
-  flex-shrink: 0;
-}
-
 .feature-info {
   text-align: center;
 }
@@ -751,11 +782,11 @@ onUnmounted(() => {
   margin: 0 0 8px 0;
   font-size: 24px;
   font-weight: 600;
-  color: #1F2329;
+  color: #1A1A1A;
 }
 
 .feature-description {
-  margin: 0;
+  margin: 12px 12px;
   font-size: 14px;
   color: #333333;
   line-height: 22px;
@@ -763,10 +794,10 @@ onUnmounted(() => {
 
 .select-circle {
   position: absolute;
-  top: 12px;
+  bottom: 12px;
   right: 12px;
-  width: 20px;
-  height: 20px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   border: 2px solid #dcdfe6;
   display: flex;
@@ -782,7 +813,7 @@ onUnmounted(() => {
 
 /* ========== 表单卡片 ========== */
 .form-container {
-  padding: 0 16px;
+  padding: 0 24px;
 }
 
 /* 步骤 */
@@ -790,8 +821,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 6px 0;
+  gap: 10px;
+  padding: 16px 0;
+  width: 1042px;
 }
 
 .step {
@@ -803,12 +835,12 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: #dcdfe6;
     color: #fff;
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
   }
 
@@ -822,9 +854,8 @@ onUnmounted(() => {
     gap: 2px;
 
     .step-label {
-      font-size: 18px;
-      color: #333333;
-      font-weight: 600;
+      font-size: 14px;
+      color: #909399;
     }
 
     .step-status {
@@ -840,23 +871,27 @@ onUnmounted(() => {
 }
 
 .step-line {
-  width: 100px;
+  width: 200px;
   height: 1px;
-  background: #004cff;
+  background: #D9D9D9;
+
+  &.active {
+    background: #075DFE;
+  }
 }
 
 .divider {
   height: 1px;
   background: #d9d9d9;
-  margin: 0 0 6px;
+  margin: 0 0 16px;
 }
 
 /* 基础信息设置标题 */
 .section-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .section-bar {
@@ -879,8 +914,8 @@ onUnmounted(() => {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px 12px;
-  margin-bottom: 10px;
+  gap: 15px 45px;
+  margin-bottom: 16px;
 }
 
 :deep(.form-grid .el-form-item) {
@@ -899,16 +934,29 @@ onUnmounted(() => {
   width: 100%;
 }
 
+/* 必填标点改为蓝色圆点 */
+:deep(.el-form-item.is-required > .el-form-item__label::before) {
+  content: '' !important;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #075dfe;
+  margin-right: 5px;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
 /* 规则设置 */
 .rule-section {
   background: #1e293b;
   border-radius: 12px;
-  padding: 10px 16px;
-  margin-bottom: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
 }
 
 .rule-title {
-  margin: 0 0 6px;
+  margin: 0 0 10px;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
@@ -918,13 +966,13 @@ onUnmounted(() => {
 .rule-body {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 24px;
 }
 
 .rule-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   color: #fff;
   flex: 1;
   align-items: center;
@@ -948,16 +996,22 @@ onUnmounted(() => {
   }
 
   :deep(.el-switch) {
-    --el-switch-on-color: #10b981;
+    --el-switch-on-color: #075dfe;
     --el-switch-off-color: #64748b;
+    margin-bottom: -8px;
+    margin-top: 0;
+  }
+
+  :deep(.difficulty-select) {
+    width: 155px;
   }
 
   :deep(.rule-select) {
     width: 155px;
   }
 
-  :deep(.difficulty-select) {
-    width: 155px;
+  :deep(.rule-select) .el-select__wrapper {
+    height: 36px;
   }
 }
 
@@ -978,7 +1032,7 @@ onUnmounted(() => {
 .btn-next {
   width: 203px;
   height: 40px;
-  background: linear-gradient(90deg, #075dfe, #409eff);
+  background: #075dfe;
   color: #fff;
   border: none;
   border-radius: 8px;
