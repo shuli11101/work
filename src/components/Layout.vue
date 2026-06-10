@@ -40,14 +40,14 @@ function toggleCollapse() {
     </el-aside>
     <el-container style="flex-direction: column">
       <el-header style="
-          height: 60px;
+          height: 50px;
           background-color: #fff;
           display: flex;
           align-items: center;
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
           z-index: 10;
         ">
-        <el-icon :size="20" style="cursor: pointer; margin-right: 16px" @click="toggleCollapse">
+        <el-icon :size="15" style="cursor: pointer; margin-right: 16px" @click="toggleCollapse">
           <Fold v-if="!isCollapse" />
           <Expand v-else />
         </el-icon>

@@ -1,8 +1,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { Target, Layers, BookOpen, Trophy, Puzzle } from '@icon-park/vue-next'
 import { Check } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+import BaseCard from './BaseCard.vue'
+import RightCard from './RightCard.vue'
+
+const router = useRouter()
 
 // 功能卡片数据
 const features = [
@@ -147,8 +152,9 @@ const ruleRules = reactive({
 
 // 点击下一步
 const handleSubmit = async () => {
-  await baseFormRef.value.validate()
-  await ruleFormRef.value.validate()
+  // await baseFormRef.value.validate()
+  // await ruleFormRef.value.validate()
+  router.push('/auto-complete/select-object')
   // 提交表单数据
   console.log('下一步')
 }
@@ -175,7 +181,7 @@ const chartOption = {
   tooltip: { trigger: 'item' },
   legend: {
     orient: 'vertical',
-    right: 0,
+    left: '55%',
     top: 'center',
     itemWidth: 10,
     itemHeight: 10,
@@ -241,7 +247,7 @@ onUnmounted(() => {
     <el-main class="home-main">
       <div class="card-layout">
         <div class="left-cards">
-          <el-card class="card card-top-left" shadow="hover">
+          <BaseCard>
             <div class="feature-list">
               <div @click="selectPurpose(item)" v-for="item in features" :key="item.title" class="feature-item"
                 :class="{ selected: corePurpose?.title === item.title }"
@@ -260,8 +266,8 @@ onUnmounted(() => {
                 </div>
               </div>
             </div>
-          </el-card>
-          <el-card class="card card-bottom-left" shadow="hover">
+          </BaseCard>
+          <BaseCard style="flex: 1;">
             <div class="form-container">
               <!-- 步骤 -->
               <div class="steps">
@@ -369,15 +375,14 @@ onUnmounted(() => {
 
               <!-- 下一步 -->
               <div class="form-footer">
-                <el-button @click="handleSubmit" type="primary">下一步</el-button>
+                <el-button @click="handleSubmit" type="primary" style="margin-top: 20px;">下一步</el-button>
               </div>
             </div>
-          </el-card>
+          </BaseCard>
         </div>
         <!-- 右侧 -->
-        <el-card class="card card-right" shadow="hover">
+        <RightCard title="班级学情概览" style="width: 360px; flex-shrink: 0;">
           <div class="right-content">
-            <h4 class="right-title">班级学情概览</h4>
             <div ref="chartRef" class="chart-container"></div>
 
             <div class="stats-row">
@@ -411,7 +416,7 @@ onUnmounted(() => {
               <el-table-column prop="rate" label="未掌握" width="70" />
             </el-table>
           </div>
-        </el-card>
+        </RightCard>
       </div>
     </el-main>
   </div>
@@ -471,25 +476,8 @@ onUnmounted(() => {
   min-width: 0;
 }
 
-.card {
-  border-radius: 8px;
-}
-
-.card-top-left {
-  flex: 0 0 auto;
-}
-
-.card-bottom-left {
-  flex: 1;
-}
-
-.card-right {
-  width: 360px;
-  flex-shrink: 0;
-}
-
 .right-content {
-  padding: 4px;
+  padding: 0;
 }
 
 .right-title {
