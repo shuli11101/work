@@ -1,5 +1,5 @@
 <script setup>
-import { getStudentList } from '@/api/index.js'
+import { getStudentList, getKnowledgeMastery } from '@/api/index.js'
 import { computed, onMounted, ref } from 'vue'
 import * as echarts from 'echarts'
 import StepLayout from './StepLayout.vue'
@@ -46,12 +46,40 @@ const selectedAll = computed({
   }
 })
 
+// 清除选择
 const clearSelect = () => {
   sortStudentList.value.forEach(item => item.checked = false)
   selectCount.value = 0
 }
 
+// 右下角覆盖知识点
+const coverKnowledge = computed(() => {
+  return [...new Set(sortStudentList.value.filter(item => item.checked).map(item => item.weakPoints).flat())]
+})
+
 // 右侧图表
+const knowledgeList = ref([])
+const difficultyStats = computed(() => {
+  const easy = knowledgeList.value.filter(k => k.mastery >= 80).length
+  const medium = knowledgeList.value.filter(k => k.mastery >= 60 && k.mastery < 80).length
+  const hard = knowledgeList.value.filter(k => k.mastery < 60).length
+  return { easy, medium, hard }
+})
+
+const getKnowledge = async () => {
+  try {
+    const res = await getKnowledgeMastery()
+    if (res.code === 200) {
+      knowledgeList.value = res.list
+      initChart()
+    }
+  } catch (error) {
+    console.error('获取知识点掌握度失败:', error)
+  }
+}
+
+
+
 const chartRef = ref(null)
 
 function initChart() {
@@ -67,9 +95,9 @@ function initChart() {
         label: { show: false },
         emphasis: { scale: false },
         data: [
-          { value: 40, name: '简单', itemStyle: { color: '#409eff' } },
-          { value: 35, name: '中等', itemStyle: { color: '#e6a23c' } },
-          { value: 25, name: '困难', itemStyle: { color: '#f56c6c' } },
+          { value: difficultyStats.value.easy, name: '简单', itemStyle: { color: '#409eff' } },
+          { value: difficultyStats.value.medium, name: '中等', itemStyle: { color: '#e6a23c' } },
+          { value: difficultyStats.value.hard, name: '困难', itemStyle: { color: '#f56c6c' } },
         ],
       },
     ],
@@ -79,7 +107,7 @@ function initChart() {
 
 onMounted(() => {
   getStudent()
-  initChart()
+  getKnowledge()
 })
 </script>
 
@@ -170,25 +198,33 @@ onMounted(() => {
         <div class="type-grid">
           <div class="type-item">
             <span class="type-label">单选</span>
-            <span class="type-count">--</span>
+            <span>--题</span>
+            <span class="type-count">--分</span>
           </div>
           <div class="type-item">
             <span class="type-label">多选</span>
-            <span class="type-count">--</span>
+            <span>--题</span>
+            <span class="type-count">--分</span>
           </div>
           <div class="type-item">
             <span class="type-label">填空</span>
-            <span class="type-count">--</span>
+            <span>--题</span>
+            <span class="type-count">--分</span>
           </div>
           <div class="type-item">
             <span class="type-label">简答</span>
-            <span class="type-count">--</span>
+            <span>--题</span>
+            <span class="type-count">--分</span>
           </div>
         </div>
       </div>
       <div class="overview-section">
         <h4 class="overview-section-title">覆盖知识点top5</h4>
-        <div class="knowledge-tags" />
+        <div class="knowledge-tags">
+          <el-tag v-for="tag in coverKnowledge" :key="tag" type="info" size="small" style="margin: 5px;">
+            {{ tag }}
+          </el-tag>
+        </div>
       </div>
     </template>
   </StepLayout>
@@ -204,9 +240,10 @@ onMounted(() => {
 
   .overview-section-title {
     margin: 0 0 8px 0;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    line-height: 24px;
+    color: #1F2329;
     padding-left: 8px;
     border-left: 3px solid #409eff;
   }
@@ -231,8 +268,8 @@ onMounted(() => {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 12px;
-        color: #606266;
+        font-size: 13px;
+        color: #666666;
 
         .dot {
           display: inline-block;
@@ -270,14 +307,14 @@ onMounted(() => {
       border-radius: 6px;
 
       .type-label {
-        font-size: 13px;
-        color: #606266;
+        font-size: 14px;
+        color: #333333;
       }
 
       .type-count {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
-        color: #303133;
+        color: #1F2329;
       }
     }
   }

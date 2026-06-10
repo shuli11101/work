@@ -79,9 +79,10 @@ const emit = defineEmits(['prev', 'next'])
 
 .page-title {
   margin: 0 0 4px 0;
-  font-size: 15px;
+  font-size: 24px;
   font-weight: 600;
-  color: #303133;
+  line-height: 32px;
+  color: #1F2329;
 }
 
 .steps {
@@ -120,13 +121,17 @@ const emit = defineEmits(['prev', 'next'])
     gap: 0;
 
     .step-label {
-      font-size: 12px;
-      color: #909399;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 20px;
+      color: #666666;
     }
 
     .step-status {
-      font-size: 9px;
-      color: #909399;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      color: #999999;
     }
   }
 

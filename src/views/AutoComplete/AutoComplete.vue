@@ -159,11 +159,6 @@ const handleSubmit = async () => {
   console.log('下一步')
 }
 
-
-
-
-
-
 // 图表
 // 临时数据
 const top5Data = [
@@ -179,24 +174,12 @@ let chartInstance = null
 
 const chartOption = {
   tooltip: { trigger: 'item' },
-  legend: {
-    orient: 'vertical',
-    left: '55%',
-    top: 'center',
-    itemWidth: 10,
-    itemHeight: 10,
-    textStyle: { fontSize: 12, color: '#606266' },
-    formatter: (name) => {
-      const map = { '优秀': '优秀 (75人)', '良好': '良好 (50人)', '中等': '中等 (40人)', '待提高': '待提高 (35人)' }
-      return map[name] || name
-    }
-  },
   series: [{
     type: 'pie',
     radius: ['55%', '75%'],
-    center: ['30%', '50%'],
+    center: ['50%', '50%'],
     avoidLabelOverlap: false,
-    label: { show: true, position: 'center', formatter: '85%', fontSize: 18, fontWeight: 'bold', color: '#303133' },
+    label: { show: true, position: 'center', formatter: '45\n总人数', fontSize: 16, fontWeight: 600, lineHeight: 24, color: '#1F2329' },
     emphasis: { scale: false },
     data: [
       { value: 75, name: '优秀', itemStyle: { color: '#409eff' } },
@@ -218,8 +201,6 @@ onMounted(() => {
 onUnmounted(() => {
   chartInstance?.dispose()
 })
-
-
 </script>
 
 <template>
@@ -242,12 +223,13 @@ onUnmounted(() => {
   <div class="home">
     <div class="header-content">
       <h2 class="title">AI智能组卷</h2>
-      <p class="subtitle">基于人工智能技术</p>
+      <p class="subtitle">基于人工智能技术，根据知识点和难度自动生成高质量试卷</p>
     </div>
     <el-main class="home-main">
       <div class="card-layout">
         <div class="left-cards">
-          <BaseCard>
+          <!-- 顶部：功能选择 -->
+          <el-card class="card top-card" shadow="hover">
             <div class="feature-list">
               <div @click="selectPurpose(item)" v-for="item in features" :key="item.title" class="feature-item"
                 :class="{ selected: corePurpose?.title === item.title }"
@@ -266,8 +248,9 @@ onUnmounted(() => {
                 </div>
               </div>
             </div>
-          </BaseCard>
-          <BaseCard style="flex: 1;">
+          </el-card>
+          <!-- 底部：表单 -->
+          <el-card class="card form-card" shadow="hover">
             <div class="form-container">
               <!-- 步骤 -->
               <div class="steps">
@@ -296,8 +279,13 @@ onUnmounted(() => {
                 </div>
               </div>
 
+              <div class="divider"></div>
+
               <!-- 基础信息设置 -->
-              <h4 class="section-title">基础信息设置</h4>
+              <div class="section-header">
+                <span class="section-bar"></span>
+                <h4 class="section-title">基础信息设置</h4>
+              </div>
               <el-form ref="baseFormRef" class="form-grid" label-position="top" :model="baseForm" :rules="baseRules">
                 <el-form-item label="学段" prop="levelSubmit">
                   <el-select placeholder="请选择" v-model="baseForm.levelSubmit">
@@ -348,75 +336,122 @@ onUnmounted(() => {
               </el-form>
 
               <!-- 试卷规则设置 -->
-              <h4 class="section-title">试卷规则设置</h4>
-              <el-form ref="ruleFormRef" class="rule-row" label-position="top" :model="ruleForm" :rules="ruleRules">
-                <el-form-item label="总分" prop="totalScoreSubmit">
-                  <el-select placeholder="请选择" style="width: 140px" v-model="ruleForm.totalScoreSubmit">
-                    <el-option v-for="item in totalScore" :key="item.key" :label="item.label"
-                      :value="item.value"></el-option>
-                  </el-select>
-                </el-form-item>
-                <div class="line"></div>
-                <el-form-item label="题目难易度" prop="difficultySubmitSubmit">
-                  <el-select placeholder="请选择" style="width: 140px" v-model="ruleForm.difficultySubmitSubmit">
-                    <el-option v-for="item in difficulty" :key="item.key" :label="item.label"
-                      :value="item.value"></el-option>
-                  </el-select>
-                </el-form-item>
-                <div class="line"></div>
-                <el-form-item label="同题型连续出题" prop="sameTypeSubmit">
-                  <el-switch v-model="ruleForm.sameTypeSubmit" active-value="true" inactive-value="false" />
-                </el-form-item>
-                <div class="line"></div>
-                <el-form-item label="避免重复知识点" prop="avoidRepeatSubmit">
-                  <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="true" inactive-value="false" />
-                </el-form-item>
-              </el-form>
+              <div class="rule-section">
+                <h4 class="rule-title">试卷规则设置</h4>
+                <div class="rule-body">
+                  <div class="rule-item">
+                    <label>总分</label>
+                    <el-select placeholder="请选择" v-model="ruleForm.totalScoreSubmit" class="rule-select">
+                      <el-option v-for="item in totalScore" :key="item.key" :label="item.label"
+                        :value="item.value"></el-option>
+                    </el-select>
+                  </div>
+                  <div class="rule-divider"></div>
+                  <div class="rule-item">
+                    <label>题目难易度</label>
+                    <el-select class="difficulty-select" placeholder="请选择" v-model="ruleForm.difficultySubmitSubmit">
+                      <el-option v-for="item in difficulty" :key="item.key" :label="item.label"
+                        :value="item.value"></el-option>
+                    </el-select>
+                  </div>
+                  <div class="rule-divider"></div>
+                  <div class="rule-item">
+                    <label style="text-align: center;">同题型连续出题</label>
+                    <el-switch v-model="ruleForm.sameTypeSubmit" active-value="true" inactive-value="false" />
+                  </div>
+                  <div class="rule-divider"></div>
+                  <div class="rule-item">
+                    <label style="text-align: center;">避免重复知识点</label>
+                    <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="true" inactive-value="false" />
+                  </div>
+                </div>
+              </div>
 
               <!-- 下一步 -->
               <div class="form-footer">
-                <el-button @click="handleSubmit" type="primary" style="margin-top: 20px;">下一步</el-button>
+                <el-button class="btn-next" @click="handleSubmit">下一步</el-button>
               </div>
             </div>
-          </BaseCard>
+          </el-card>
         </div>
         <!-- 右侧 -->
-        <RightCard title="班级学情概览" style="width: 360px; flex-shrink: 0;">
+        <el-card class="card card-right" shadow="hover">
           <div class="right-content">
-            <div ref="chartRef" class="chart-container"></div>
+            <div class="right-header">
+              <span class="right-header-bar"></span>
+              <h4 class="right-title">班级学情概览</h4>
+            </div>
+
+            <div class="stats-overview">
+              <div ref="chartRef" class="chart-container"></div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-dot dot-excellent"></span>
+                  <span class="legend-label">优秀</span>
+                  <span class="legend-count">8人（18%）</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot dot-good"></span>
+                  <span class="legend-label">良好</span>
+                  <span class="legend-count">14人（31%）</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot dot-medium"></span>
+                  <span class="legend-label">中等</span>
+                  <span class="legend-count">15人（33%）</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot dot-poor"></span>
+                  <span class="legend-label">待提升</span>
+                  <span class="legend-count">8人（18%）</span>
+                </div>
+              </div>
+            </div>
 
             <div class="stats-row">
               <div class="stat-card">
-                <div class="stat-title">
-                  <span class="stat-label">班级平均掌握度</span>
-                </div>
-                <span class="stat-value">62%</span>
-                <span class="stat-compare">
+                <div class="stat-label">班级平均掌握度</div>
+                <div class="stat-value">62<span class="stat-unit">%</span></div>
+                <div class="stat-compare">
                   <span class="compare-text">较上次</span>
-                  <span class="compare-value up">10%</span>
-                </span>
+                  <span class="compare-value compare-up">6%</span>
+                  <span class="compare-icon icon-up">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 10.5L8 5.5L13 10.5" stroke="#03BC1F" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                </div>
               </div>
               <div class="stat-card">
-                <div class="stat-title">
-                  <span class="stat-label">平均正确率</span>
-                </div>
-                <span class="stat-value">65%</span>
-                <span class="stat-compare">
+                <div class="stat-label">平均正确率</div>
+                <div class="stat-value">65<span class="stat-unit">%</span></div>
+                <div class="stat-compare">
                   <span class="compare-text">较上次</span>
-                  <span class="compare-value up">10%</span>
-                </span>
+                  <span class="compare-value compare-down">6%</span>
+                  <span class="compare-icon icon-down">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 5.5L8 10.5L13 5.5" stroke="#EE0000" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                </div>
               </div>
             </div>
 
-            <h4 class="right-title" style="margin-top: 16px">班级薄弱知识点TOP5</h4>
+            <div class="top5-header">
+              <span class="right-header-bar"></span>
+              <h4 class="right-title">班级薄弱知识点TOP5</h4>
+            </div>
             <el-table :data="top5Data" style="width: 100%" size="small" class="top5-table">
               <el-table-column prop="rank" label="排名" width="45" />
               <el-table-column prop="name" label="知识点" />
               <el-table-column prop="rate" label="掌握率" width="70" />
               <el-table-column prop="rate" label="未掌握" width="70" />
             </el-table>
+            <div class="update-time">更新于 2024-06-05 17:30</div>
           </div>
-        </RightCard>
+        </el-card>
       </div>
     </el-main>
   </div>
@@ -424,7 +459,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .home {
-  padding: 20px;
+  padding: 10px;
   padding-top: 0;
   height: 100%;
   box-sizing: border-box;
@@ -434,19 +469,23 @@ onUnmounted(() => {
 
 .header-content {
   text-align: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .title {
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
   font-size: 24px;
-  color: #303133;
+  font-weight: 600;
+  line-height: 32px;
+  color: #1F2329;
 }
 
 .subtitle {
   margin: 0;
-  font-size: 14px;
-  color: #909399;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #666666;
 }
 
 .home-main {
@@ -454,7 +493,7 @@ onUnmounted(() => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  padding: 20px;
+  padding: 10px;
   --el-main-padding: 0px;
 }
 
@@ -465,102 +504,216 @@ onUnmounted(() => {
 .card-layout {
   height: 100%;
   display: flex;
-  gap: 16px;
+  gap: 8px;
 }
 
 .left-cards {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   min-width: 0;
 }
 
+.card {
+  border-radius: 12px;
+}
+
+.top-card {
+  flex: 0 0 auto;
+}
+
+.form-card {
+  flex: 1;
+
+  :deep(.el-card__body) {
+    padding-top: 10px;
+  }
+}
+
+.card-right {
+  width: 440px;
+  flex-shrink: 0;
+}
+
+/* ========== 右侧内容 ========== */
 .right-content {
-  padding: 0;
+  padding: 16px 16px 12px;
+}
+
+.right-header,
+.top5-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.right-header-bar {
+  width: 3px;
+  height: 20px;
+  background: #075dfe;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .right-title {
-  margin: 0 0 12px 0;
+  margin: 0;
   font-size: 15px;
-  color: #303133;
   font-weight: 600;
+  line-height: 20px;
+  color: #1F2329;
 }
 
-:deep(.top5-table .el-table__header-wrapper th) {
-  background-color: rgb(237, 252, 254);
+/* 统计概览（饼图 + 总人数） */
+.stats-overview {
+  position: relative;
+  display: flex;
+  gap: 0;
+  margin-bottom: 10px;
 }
 
 .chart-container {
-  width: 100%;
-  height: 200px;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
 }
 
+.chart-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding-left: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.dot-excellent {
+    background: #03BC96;
+  }
+
+  &.dot-good {
+    background: #1E77FA;
+  }
+
+  &.dot-medium {
+    background: #FD8F37;
+  }
+
+  &.dot-poor {
+    background: #FD7C9A;
+  }
+}
+
+.legend-label {
+  color: #1F2329;
+  min-width: 48px;
+}
+
+.legend-count {
+  color: #666666;
+  font-size: 14px;
+  margin-left: auto;
+}
+
+/* 统计卡片 */
 .stats-row {
   display: flex;
-  gap: 12px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .stat-card {
   flex: 1;
-  background: #f5f7fa;
+  border: 1px solid #e6e6e6;
   border-radius: 8px;
   padding: 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 4px;
 
-  .stat-title {
+  .stat-label {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #1F2329;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1F2329;
+    line-height: 1.2;
+  }
+
+  .stat-unit {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1F2329;
+  }
+
+  .stat-compare {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
+
+
+    .compare-text {
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      color: #666666;
+    }
+
+    .compare-value {
+      font-size: 12px;
+      font-weight: 600;
+
+      &.compare-up {
+        color: #03bc1f;
+      }
+
+      &.compare-down {
+        color: #ee0000;
+      }
+    }
+
+    .compare-icon {
+      display: flex;
+      align-items: center;
+    }
   }
 }
 
-.stat-value {
-  font-size: 22px;
-  font-weight: bold;
-  color: #409eff;
-}
-
-.stat-label {
+/* 更新時間 */
+.update-time {
+  text-align: right;
   font-size: 12px;
-  color: #909399;
-}
-
-.stat-compare {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  font-weight: 400;
+  line-height: 18px;
+  color: #999999;
   margin-top: 4px;
-
-  .compare-text {
-    font-size: 11px;
-    color: #c0c4cc;
-  }
-
-  .compare-value {
-    font-size: 11px;
-    color: #c0c4cc;
-
-    &.up::before {
-      content: '↑ ';
-      color: #67c23a;
-    }
-
-    &.down::before {
-      content: '↓ ';
-      color: #f56c6c;
-    }
-  }
 }
 
+/* ========== 功能卡片 ========== */
 .feature-list {
   display: flex;
-  gap: 16px;
+  gap: 8px;
+  padding: 10px;
 }
 
 .feature-item {
@@ -568,135 +721,166 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 15px;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px 10px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.2s;
   flex: 1;
+  min-height: 160px;
 
   &:hover {
-    background-color: #f5f7fa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &.selected {
+    outline: 2px solid #1e77fa;
   }
 }
 
 .feature-icon {
   flex-shrink: 0;
-  margin-top: 2px;
+}
+
+.feature-info {
+  text-align: center;
+}
+
+.feature-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1F2329;
+}
+
+.feature-description {
+  margin: 0;
+  font-size: 14px;
+  color: #333333;
+  line-height: 22px;
 }
 
 .select-circle {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 10px;
-  height: 10px;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 2px solid #dcdfe6;
-  background: #fff;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s;
 
   &.checked {
-    background: #409eff;
-    border-color: #409eff;
+    background: #075dfe;
+    border-color: #075dfe;
   }
 }
 
-.feature-info {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-
-  .feature-title {
-    margin: 0 0 14px 0;
-    font-size: 20px;
-    color: #303133;
-  }
-
-  .feature-description {
-    font-size: 12px;
-    line-height: 1.5;
-  }
-}
-
+/* ========== 表单卡片 ========== */
 .form-container {
-  padding: 8px;
+  padding: 0 16px;
 }
 
+/* 步骤 */
 .steps {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 13px;
-  margin-bottom: 24px;
+  gap: 20px;
+  padding: 6px 0;
 }
 
 .step {
   display: flex;
   align-items: center;
   gap: 8px;
-}
 
-.step-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #dcdfe6;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+  }
 
-.step-status {
-  font-size: 12px;
-  color: #909399;
-}
+  &.active .step-num {
+    background: #075dfe;
+  }
 
-.step-num {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #dcdfe6;
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-}
+  .step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 
-.step.active .step-num {
-  background: #075dfe;
-}
+    .step-label {
+      font-size: 18px;
+      color: #333333;
+      font-weight: 600;
+    }
 
-.step-label {
-  font-size: 20px;
-  color: #909399;
-}
+    .step-status {
+      font-size: 12px;
+      color: #909399;
+    }
+  }
 
-.step.active .step-label {
-  color: #409eff;
-  font-weight: 500;
+  &.active .step-label {
+    color: #0080ff;
+    font-weight: 500;
+  }
 }
 
 .step-line {
   width: 100px;
   height: 1px;
-  background: #dcdfe6;
+  background: #004cff;
+}
+
+.divider {
+  height: 1px;
+  background: #d9d9d9;
+  margin: 0 0 6px;
+}
+
+/* 基础信息设置标题 */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.section-bar {
+  width: 3px;
+  height: 24px;
+  background: #075dfe;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .section-title {
-  margin: 0 0 16px 0;
+  margin: 0;
   font-size: 16px;
-  color: #303133;
-  padding-left: 10px;
-  border-left: 3px solid #409eff;
+  font-weight: 600;
+  line-height: 24px;
+  color: #1F2329;
 }
 
+/* 表单网格 */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 6px 12px;
+  margin-bottom: 10px;
 }
 
 :deep(.form-grid .el-form-item) {
@@ -704,9 +888,10 @@ onUnmounted(() => {
 }
 
 :deep(.form-grid .el-form-item__label) {
-  font-size: 11px;
-  color: #606266;
-  padding-bottom: 2px;
+  font-size: 14px;
+  color: #333333;
+  font-weight: 400;
+  padding-bottom: 4px;
 }
 
 :deep(.form-grid .el-select),
@@ -714,46 +899,91 @@ onUnmounted(() => {
   width: 100%;
 }
 
-:deep(.form-grid .el-select .el-select__wrapper) {
-  height: 28px;
-  min-height: 28px;
+/* 规则设置 */
+.rule-section {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
 }
 
-:deep(.form-grid .el-input .el-input__wrapper) {
-  height: 28px;
+.rule-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #fff;
 }
 
-.rule-row {
+.rule-body {
   display: flex;
-  justify-content: space-evenly;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+}
 
-  .line {
-    width: 1px;
-    height: 36px;
-    background: #dcdfe6;
+.rule-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #fff;
+  flex: 1;
+  align-items: center;
+
+  label {
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    width: 70%;
+  }
+
+  :deep(.el-select) .el-select__wrapper {
+    background: rgba(255, 255, 255, 0.1);
+    border: 0;
+    color: #fff;
+  }
+
+  :deep(.el-select) .el-select__placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  :deep(.el-switch) {
+    --el-switch-on-color: #10b981;
+    --el-switch-off-color: #64748b;
+  }
+
+  :deep(.rule-select) {
+    width: 155px;
+  }
+
+  :deep(.difficulty-select) {
+    width: 155px;
   }
 }
 
-:deep(.rule-row .el-form-item) {
-  margin-bottom: 0;
+.rule-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
-:deep(.rule-row .el-form-item__label) {
-  font-size: 12px;
-  color: #303133;
-  font-weight: 500;
-  padding-bottom: 4px;
-}
-
+/* 下一步 */
 .form-footer {
   display: flex;
   justify-content: center;
+  padding: 0 0 8px;
+}
 
-  :deep(.el-button) {
-    width: 30%;
-  }
+.btn-next {
+  width: 203px;
+  height: 40px;
+  background: linear-gradient(90deg, #075dfe, #409eff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
 }
 </style>

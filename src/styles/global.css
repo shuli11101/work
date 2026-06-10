@@ -1,0 +1,36 @@
+/* ========== 教育平台 B 端字体规范 ========== */
+:root {
+  /* 字体家族 */
+  --font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+
+  /* 字号 / 字重 / 行高 */
+  --font-page-title:   24px / 600 / 32px;
+  --font-h2:           20px / 600 / 28px;
+  --font-h3:           16px / 600 / 24px;
+  --font-body:         14px / 400 / 22px;
+  --font-body-helper:  13px / 400 / 20px;
+  --font-note:         12px / 400 / 18px;
+
+  /* 颜色 */
+  --color-title:       #1F2329;
+  --color-body:        #333333;
+  --color-helper:      #666666;
+  --color-note:        #999999;
+}
+
+* {
+  font-family: var(--font-family);
+}
+
+body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-title);
+}

@@ -18,9 +18,10 @@ defineProps({
   border-radius: 8px;
 
   .card-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    line-height: 24px;
+    color: #1F2329;
   }
 
   :deep(.el-card__header) {

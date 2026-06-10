@@ -27,7 +27,8 @@ function toggleCollapse() {
 
 <template>
   <el-container style="height: 100vh">
-    <el-aside :width="isCollapse ? '64px' : '200px'" style="background-color: #304156; transition: width 0.3s">
+    <el-aside :width="isCollapse ? '0px' : '200px'"
+      style="background-color: #304156; transition: width 0.3s; overflow: hidden">
       <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" background-color="#304156"
         text-color="#bfcbd9" active-text-color="#409eff" @select="handleSelect">
         <el-menu-item v-for="item in menuItems" :key="item.path" :index="item.path">

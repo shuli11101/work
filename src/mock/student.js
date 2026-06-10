@@ -19,3 +19,12 @@ Mock.mock('/api/student/list', 'get', {
     },
   ],
 })
+
+// 知识点掌握度（用于计算简单/中等/困难）
+Mock.mock('/api/knowledge/mastery', 'get', {
+  code: 200,
+  list: weakPointPool.map((name) => ({
+    name,
+    'mastery|30-95': 1, // 掌握度越低，难度越高
+  })),
+})
