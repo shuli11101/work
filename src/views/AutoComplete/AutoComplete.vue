@@ -149,8 +149,10 @@ const ruleFormRef = ref(null)
 const ruleForm = reactive({
   totalScoreSubmit: '',
   difficultySubmitSubmit: '',
-  sameTypeSubmit: false,
-  avoidRepeatSubmit: false,
+  sameTypeSubmit_first: true,
+  sameTypeSubmit_second: false,
+  avoidRepeatSubmit_first: true,
+  avoidRepeatSubmit_second: false,
 })
 const ruleRules = reactive({
   totalScoreSubmit: [{ required: true, message: '请输入总分', trigger: 'blur' }],
@@ -185,10 +187,18 @@ const chartOption = {
   tooltip: { trigger: 'item' },
   series: [{
     type: 'pie',
-    radius: ['55%', '75%'],
+    radius: ['65%', '85%'],
     center: ['50%', '50%'],
     avoidLabelOverlap: false,
-    label: { show: true, position: 'center', formatter: '45\n总人数', fontSize: 16, fontWeight: 600, lineHeight: 24, color: '#1F2329' },
+    label: {
+      show: true,
+      position: 'center',
+      formatter: '{a|45}\n{b|总人数}',
+      rich: {
+        a: { fontSize: 40, fontWeight: 600, lineHeight: 44, color: '#000000' },
+        b: { fontSize: 18, fontWeight: 600, lineHeight: 24, color: '#5A6382' }
+      }
+    },
     emphasis: { scale: false },
     data: [
       { value: 75, name: '优秀', itemStyle: { color: '#409eff' } },
@@ -366,14 +376,16 @@ onUnmounted(() => {
                   <div class="rule-divider"></div>
                   <div class="rule-item">
                     <label style="text-align: center;">同题型连续出题</label>
-                    <el-switch v-model="ruleForm.sameTypeSubmit" active-value="false" inactive-value="true" />
-                    <el-switch v-model="ruleForm.sameTypeSubmit" active-value="true" inactive-value="false" />
+                    <el-switch v-model="ruleForm.sameTypeSubmit_first" :active-value="true" :inactive-value="false" />
+                    <el-switch v-model="ruleForm.sameTypeSubmit_second" :active-value="true" :inactive-value="false" />
                   </div>
                   <div class="rule-divider"></div>
                   <div class="rule-item">
                     <label style="text-align: center;">避免重复知识点</label>
-                    <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="false" inactive-value="true" />
-                    <el-switch v-model="ruleForm.avoidRepeatSubmit" active-value="true" inactive-value="false" />
+                    <el-switch v-model="ruleForm.avoidRepeatSubmit_first" :active-value="true"
+                      :inactive-value="false" />
+                    <el-switch v-model="ruleForm.avoidRepeatSubmit_second" :active-value="true"
+                      :inactive-value="false" />
                   </div>
                 </div>
               </div>
@@ -425,13 +437,10 @@ onUnmounted(() => {
                 <div class="stat-value">62<span class="stat-unit">%</span></div>
                 <div class="stat-compare">
                   <span class="compare-text">较上次</span>
-                  <span class="compare-value compare-up">6%</span>
-                  <span class="compare-icon icon-up">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 10.5L8 5.5L13 10.5" stroke="#03BC1F" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    </svg>
-                  </span>
+                  <div class="compare-item">
+                    <span class="compare-icon icon-up"></span>
+                    <span class="compare-value compare-up">6%</span>
+                  </div>
                 </div>
               </div>
               <div class="stat-card">
@@ -439,13 +448,10 @@ onUnmounted(() => {
                 <div class="stat-value">65<span class="stat-unit">%</span></div>
                 <div class="stat-compare">
                   <span class="compare-text">较上次</span>
-                  <span class="compare-value compare-down">6%</span>
-                  <span class="compare-icon icon-down">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                      <path d="M3 5.5L8 10.5L13 5.5" stroke="#EE0000" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                    </svg>
-                  </span>
+                  <div class="compare-item">
+                    <span class="compare-icon icon-down"></span>
+                    <span class="compare-value compare-down">6%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -456,11 +462,10 @@ onUnmounted(() => {
             </div>
             <el-table :data="top5Data" style="width: 100%" size="small" class="top5-table">
               <el-table-column prop="rank" label="排名" width="45" />
-              <el-table-column prop="name" label="知识点" />
-              <el-table-column prop="rate" label="掌握率" width="70" />
+              <el-table-column prop="name" label="知识点" width="180" />
+              <el-table-column prop="rate" label="掌握率" />
               <el-table-column prop="rate" label="未掌握" width="70" />
             </el-table>
-            <div class="update-time">更新于 2024-06-05 17:30</div>
           </div>
         </el-card>
       </div>
@@ -582,11 +587,11 @@ onUnmounted(() => {
 }
 
 .right-title {
-  margin: 0;
-  font-size: 15px;
+  margin: 17px 10px;
+  font-size: 18px;
   font-weight: 600;
   line-height: 20px;
-  color: #1F2329;
+  color: #075DFE;
 }
 
 /* 统计概览（饼图 + 总人数） */
@@ -598,8 +603,8 @@ onUnmounted(() => {
 }
 
 .chart-container {
-  width: 180px;
-  height: 180px;
+  width: 217px;
+  height: 217px;
   flex-shrink: 0;
 }
 
@@ -668,20 +673,23 @@ onUnmounted(() => {
   padding: 12px;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   gap: 4px;
+  width: 230px;
+  height: 170px;
 
   .stat-label {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 600;
-    line-height: 20px;
-    color: #1F2329;
+    line-height: 100%;
+    color: #5A6382;
   }
 
   .stat-value {
-    font-size: 28px;
+    font-size: 40px;
     font-weight: 600;
     color: #1F2329;
-    line-height: 1.2;
+    line-height: 100%;
   }
 
   .stat-unit {
@@ -693,14 +701,21 @@ onUnmounted(() => {
   .stat-compare {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 4px;
 
 
     .compare-text {
-      font-size: 12px;
+      font-size: 18px;
       font-weight: 400;
       line-height: 16px;
-      color: #666666;
+      color: #5A6382;
+    }
+
+    .compare-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .compare-value {
@@ -720,6 +735,24 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
     }
+
+    .icon-up {
+      background-image: url('@/assets/picture/up.png');
+      width: 13px;
+      height: 13px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .icon-down {
+      background-image: url('@/assets/picture/down.png');
+      width: 13px;
+      height: 13px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
   }
 }
 
@@ -731,6 +764,13 @@ onUnmounted(() => {
   line-height: 18px;
   color: #999999;
   margin-top: 4px;
+}
+
+/* top5 表格行高 */
+.top5-table {
+  :deep(.el-table__row) {
+    height: 45px;
+  }
 }
 
 /* ========== 功能卡片 ========== */
