@@ -1,3 +1,4 @@
+<!-- 左下卡片 -->
 <script setup>
 defineProps({
   title: { type: String, required: true },
@@ -7,7 +8,12 @@ defineProps({
 <template>
   <el-card class="left-bottom-card" shadow="hover">
     <template #header>
-      <span class="card-title">{{ title }}</span>
+      <span class="card-title">
+        <span class="badge-wrapper" style="background-color: #ffffff;">
+          <img src="../assets/picture/hat.png" alt="" class="badge-img" />
+        </span>
+        {{ title }}
+      </span>
     </template>
     <slot />
   </el-card>
@@ -19,12 +25,27 @@ defineProps({
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 524px;
+  border-radius: 12px;
 
   .card-title {
     font-size: 16px;
     font-weight: 600;
     line-height: 24px;
-    color: #1F2329;
+    color: #075DFE;
+  }
+
+  .badge-wrapper {
+    margin-left: auto;
+    background: #075dfe;
+    border-radius: 4px;
+    line-height: 1;
+    display: inline-flex;
+  }
+
+  .badge-img {
+    width: 21px;
+    height: 21px;
   }
 
   :deep(.el-card__header) {

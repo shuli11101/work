@@ -1,3 +1,4 @@
+<!-- 卡片大包装组件 -->
 <script setup>
 import LeftTopCard from './LeftTopCard.vue'
 import LeftBottomCard from './LeftBottomCard.vue'
@@ -5,7 +6,8 @@ import RightCard from './RightCard.vue'
 
 defineProps({
   activeStep: { type: Number, default: 0 },
-  title: { type: String, default: '试卷自动组卷' },
+  title: { type: String, default: '' },
+  secondTitle: { type: String, default: '' },
   leftTopTitle: { type: String, default: '' },
   leftBottomTitle: { type: String, default: '' },
   rightTitle: { type: String, default: '' },
@@ -17,7 +19,7 @@ const emit = defineEmits(['prev', 'next'])
 <template>
   <div class="step-layout">
     <h2 class="page-title">{{ title }}</h2>
-
+    <span class="second-title">{{ secondTitle }}</span>
     <div class="steps">
       <div class="step" :class="{ active: activeStep >= 0 }">
         <span class="step-num">1</span>
@@ -47,14 +49,23 @@ const emit = defineEmits(['prev', 'next'])
     <el-row :gutter="12" class="cards-row">
       <el-col :span="16" class="left-col">
         <LeftTopCard v-if="$slots.leftTopBody" :title="leftTopTitle">
+          <template #badge>
+            <slot name="leftTopBadge" />
+          </template>
           <slot name="leftTopBody" />
         </LeftTopCard>
         <LeftBottomCard v-if="$slots.leftBottomBody" :title="leftBottomTitle" style="margin-top: 8px; flex: 1;">
+          <template #badge>
+            <slot name="leftBottomBadge" />
+          </template>
           <slot name="leftBottomBody" />
         </LeftBottomCard>
       </el-col>
       <el-col :span="8" class="right-col">
         <RightCard v-if="$slots.rightBody" :title="rightTitle" style="flex: 1;">
+          <template #badge>
+            <slot name="rightBadge" />
+          </template>
           <slot name="rightBody" />
         </RightCard>
       </el-col>
@@ -85,12 +96,20 @@ const emit = defineEmits(['prev', 'next'])
   color: #1F2329;
 }
 
+.second-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+  color: #5A6382;
+  margin-bottom: 24px;
+}
+
 .steps {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 50px;
+  margin-bottom: 32px;
 }
 
 .step {
@@ -102,13 +121,13 @@ const emit = defineEmits(['prev', 'next'])
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: #dcdfe6;
     color: #fff;
-    font-size: 12px;
-    font-weight: bold;
+    font-size: 22px;
+    font-weight: 600;
   }
 
   &.active .step-num {
@@ -122,7 +141,7 @@ const emit = defineEmits(['prev', 'next'])
 
     .step-label {
       font-size: 13px;
-      font-weight: 400;
+      font-weight: 600;
       line-height: 20px;
       color: #666666;
     }
@@ -142,7 +161,7 @@ const emit = defineEmits(['prev', 'next'])
 }
 
 .step-line {
-  width: 30px;
+  width: 200px;
   height: 1px;
   background: #004cff;
 }

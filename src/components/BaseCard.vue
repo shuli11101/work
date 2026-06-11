@@ -1,12 +1,13 @@
+<!-- 卡片标题 -->
 <script setup>
 defineProps({
-  title: { type: String, required: true },
+  title: { type: String, default: '' },
 })
 </script>
 
 <template>
-  <el-card class="right-card" shadow="hover">
-    <template #header>
+  <el-card class="base-card" shadow="hover">
+    <template v-if="title" #header>
       <span class="card-title">{{ title }}</span>
     </template>
     <slot />
@@ -14,7 +15,7 @@ defineProps({
 </template>
 
 <style lang="scss" scoped>
-.right-card {
+.base-card {
   border-radius: 8px;
 
   .card-title {
@@ -30,8 +31,6 @@ defineProps({
   }
 
   :deep(.el-card__body) {
-    height: calc(100% - 40px);
-    overflow-y: auto;
     padding: 8px;
   }
 }

@@ -4,8 +4,8 @@ import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Check } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
-import BaseCard from './BaseCard.vue'
-import RightCard from './RightCard.vue'
+import BaseCard from '@/components/BaseCard.vue'
+import RightCard from '@/components/RightCard.vue'
 import spriteImage1 from '../../assets/picture/001-removebg-preview.png'
 import spriteImage2 from '../../assets/picture/002-removebg-preview.png'
 import spriteImage3 from '../../assets/picture/003-removebg-preview.png'
@@ -863,7 +863,7 @@ onUnmounted(() => {
   justify-content: center;
   gap: 10px;
   padding: 16px 0;
-  width: 1042px;
+  width: 100%;
 }
 
 .step {
@@ -989,7 +989,10 @@ onUnmounted(() => {
 
 /* 规则设置 */
 .rule-section {
-  background: #1e293b;
+  background-image: url('@/assets/picture/rule-bg.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   border-radius: 12px;
   padding: 16px 20px;
   margin-bottom: 16px;
