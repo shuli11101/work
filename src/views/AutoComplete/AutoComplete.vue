@@ -11,6 +11,7 @@ import spriteImage2 from '../../assets/picture/002-removebg-preview.png'
 import spriteImage3 from '../../assets/picture/003-removebg-preview.png'
 import spriteImage4 from '../../assets/picture/004-removebg-preview.png'
 import spriteImage5 from '../../assets/picture/005-removebg-preview.png'
+import dayjs from 'dayjs'
 
 
 
@@ -209,7 +210,12 @@ const chartOption = {
   }]
 }
 
+// 班级薄弱知识点更新时间
+const updateTime = ref('')
+
 onMounted(() => {
+  // 初始化班级时间
+  updateTime.value = dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss')
   // 初始化图表
   if (chartRef.value) {
     chartInstance = echarts.init(chartRef.value)
@@ -410,22 +416,22 @@ onUnmounted(() => {
               <div class="chart-legend">
                 <div class="legend-item">
                   <span class="legend-dot dot-excellent"></span>
-                  <span class="legend-label">优秀</span>
+                  <span class="legend-label" style="color: #03BC96">优秀</span>
                   <span class="legend-count">8人（18%）</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-dot dot-good"></span>
-                  <span class="legend-label">良好</span>
+                  <span class="legend-label" style="color: #1E77FA">良好</span>
                   <span class="legend-count">14人（31%）</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-dot dot-medium"></span>
-                  <span class="legend-label">中等</span>
+                  <span class="legend-label" style="color: #FD8F37">中等</span>
                   <span class="legend-count">15人（33%）</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-dot dot-poor"></span>
-                  <span class="legend-label">待提升</span>
+                  <span class="legend-label" style="color: #FD7C9A">待提升</span>
                   <span class="legend-count">8人（18%）</span>
                 </div>
               </div>
@@ -459,6 +465,7 @@ onUnmounted(() => {
             <div class="top5-header">
               <span class="right-header-bar"></span>
               <h4 class="right-title">班级薄弱知识点TOP5</h4>
+              <span style="margin-left: auto; color: #999999; font-size: 12px;">更新于 {{ updateTime }}</span>
             </div>
             <el-table :data="top5Data" style="width: 100%" size="small" class="top5-table">
               <el-table-column prop="rank" label="排名" width="45" />
