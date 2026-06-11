@@ -4,8 +4,7 @@ import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Check } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
-import BaseCard from '@/components/BaseCard.vue'
-import RightCard from '@/components/RightCard.vue'
+import StepProgress from '@/components/StepProgress.vue'
 import spriteImage1 from '../../assets/picture/001-removebg-preview.png'
 import spriteImage2 from '../../assets/picture/002-removebg-preview.png'
 import spriteImage3 from '../../assets/picture/003-removebg-preview.png'
@@ -276,31 +275,7 @@ onUnmounted(() => {
           <el-card class="card form-card" shadow="hover">
             <div class="form-container">
               <!-- 步骤 -->
-              <div class="steps">
-                <div class="step active">
-                  <span class="step-num">1</span>
-                  <div class="step-text">
-                    <span class="step-label">基础信息</span>
-                    <span class="step-status">请填写试卷基础信息</span>
-                  </div>
-                </div>
-                <div class="step-line"></div>
-                <div class="step">
-                  <span class="step-num">2</span>
-                  <div class="step-text">
-                    <span class="step-label">选择对象</span>
-                    <span class="step-status">选择考试对象并配置范围</span>
-                  </div>
-                </div>
-                <div class="step-line"></div>
-                <div class="step">
-                  <span class="step-num">3</span>
-                  <div class="step-text">
-                    <span class="step-label">生成完成</span>
-                    <span class="step-status">生成试卷并预览</span>
-                  </div>
-                </div>
-              </div>
+              <StepProgress :active="1" />
 
               <div class="divider"></div>
 
@@ -861,70 +836,6 @@ onUnmounted(() => {
 /* ========== 表单卡片 ========== */
 .form-container {
   padding: 0 24px;
-}
-
-/* 步骤 */
-.steps {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px 0;
-  width: 100%;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  .step-num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #dcdfe6;
-    color: #fff;
-    font-size: 24px;
-    font-weight: bold;
-  }
-
-  &.active .step-num {
-    background: #075dfe;
-  }
-
-  .step-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    .step-label {
-      font-size: 14px;
-      color: #909399;
-    }
-
-    .step-status {
-      font-size: 12px;
-      color: #909399;
-    }
-  }
-
-  &.active .step-label {
-    color: #0080ff;
-    font-weight: 500;
-  }
-}
-
-.step-line {
-  width: 200px;
-  height: 1px;
-  background: #D9D9D9;
-
-  &.active {
-    background: #075DFE;
-  }
 }
 
 .divider {

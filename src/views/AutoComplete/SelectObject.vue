@@ -2,7 +2,7 @@
 import { getStudentList, getKnowledgeMastery } from '@/api/index.js'
 import { computed, onMounted, ref } from 'vue'
 import { User } from '@element-plus/icons-vue'
-import * as echarts from 'echarts'
+import ScorePie from '../../components/ScorePie.vue'
 import StepLayout from '../../components/StepLayout.vue'
 
 const top10Data = [
@@ -82,46 +82,10 @@ const getKnowledge = async () => {
     const res = await getKnowledgeMastery()
     if (res.code === 200) {
       knowledgeList.value = res.list
-      initChart()
     }
   } catch (error) {
     console.error('获取知识点掌握度失败:', error)
   }
-}
-
-
-
-const chartRef = ref(null)
-
-function initChart() {
-  if (!chartRef.value) return
-  const chart = echarts.init(chartRef.value)
-  chart.setOption({
-    tooltip: { trigger: 'item' },
-    series: [
-      {
-        type: 'pie',
-        radius: ['65%', '85%'],
-        avoidLabelOverlap: false,
-        label: {
-          show: true,
-          position: 'center',
-          formatter: '{a|100}\n{b|总分数}',
-          rich: {
-            a: { fontSize: 40, fontWeight: 600, lineHeight: 56, color: '#000000' },
-            b: { fontSize: 18, fontWeight: 400, lineHeight: 25, color: '#5A6382' }
-          }
-        },
-        emphasis: { scale: false },
-        data: [
-          { value: difficultyStats.value.easy, name: '简单', itemStyle: { color: '#409eff' } },
-          { value: difficultyStats.value.medium, name: '中等', itemStyle: { color: '#e6a23c' } },
-          { value: difficultyStats.value.hard, name: '困难', itemStyle: { color: '#f56c6c' } },
-        ],
-      },
-    ],
-  })
-  chart.resize()
 }
 
 onMounted(() => {
@@ -132,7 +96,8 @@ onMounted(() => {
 
 <template>
   <StepLayout :active-step="1" left-top-title="班级整体薄弱top10" left-bottom-title="学生薄弱分布top10" right-title="试卷出题内容概览"
-    title="靶向补弱" second-title="基于学情数据，精准定位薄弱知识点，智能生成个性化练习" @prev="$router.back()" @next="() => { }">
+    title="靶向补弱" second-title="基于学情数据，精准定位薄弱知识点，智能生成个性化练习" @prev="$router.back()"
+    @next="$router.push('/auto-complete/done')">
     <template #leftTopBadge>
       <span style="color: #fff; font-size:15px;">!</span>
     </template>
@@ -199,32 +164,11 @@ onMounted(() => {
     <template #rightBody>
       <div class="overview-section">
         <h4 class="overview-section-title">试卷总分</h4>
-        <div class="score-area">
-          <div ref="chartRef" class="score-chart"></div>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <span class="dot" style="background-color: #03BC96;"></span>
-              <div class="legend-type">
-                <span style="color: #03BC96">容易</span>
-                <span class="legend-num">{{ difficultyStats?.easy || 0 }}分 (0%)</span>
-              </div>
-            </div>
-            <div class="legend-item">
-              <span class="dot" style="background-color: #1E77FA;"></span>
-              <div class="legend-type">
-                <span style="color: #1E77FA">中等</span>
-                <span class="legend-num">{{ difficultyStats?.medium || 0 }}分 (0%)</span>
-              </div>
-            </div>
-            <div class="legend-item">
-              <span class="dot" style="background-color: #FD8F37;"></span>
-              <div class="legend-type">
-                <span style="color: #FD8F37">困难</span>
-                <span class="legend-num">{{ difficultyStats?.hard || 0 }}分 (0%)</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ScorePie :center-value="100" center-unit="总分数" :legends="[
+          { color: '#03BC96', name: '容易', value: difficultyStats.easy, percent: '0%' },
+          { color: '#1E77FA', name: '中等', value: difficultyStats.medium, percent: '0%' },
+          { color: '#FD8F37', name: '困难', value: difficultyStats.hard, percent: '0%' },
+        ]" />
       </div>
       <div class="overview-section">
         <h4 class="overview-section-title">题型分布</h4>
@@ -346,55 +290,6 @@ onMounted(() => {
     color: #5A6382;
     padding-left: 8px;
     margin-bottom: 20px
-  }
-
-  .score-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .score-chart {
-      width: 217px;
-      height: 217px;
-      flex-shrink: 0;
-    }
-
-    .chart-legend {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 48px;
-      padding-left: 70px;
-
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 600;
-
-        .dot {
-          display: inline-block;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-
-        }
-
-        .legend-type {
-          display: flex;
-          width: 100%;
-          align-items: center;
-          gap: 50px;
-
-          .legend-num {
-            font-size: 16px;
-            font-weight: 600;
-          }
-        }
-      }
-    }
   }
 
   .type-grid {
