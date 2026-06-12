@@ -11,6 +11,7 @@ defineProps({
   leftTopTitle: { type: String, default: '' },
   leftBottomTitle: { type: String, default: '' },
   rightTitle: { type: String, default: '' },
+  nextLoading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['prev', 'next'])
@@ -73,7 +74,7 @@ const emit = defineEmits(['prev', 'next'])
 
     <div class="footer-btns">
       <el-button class="btn-prev" plain @click="emit('prev')">上一步</el-button>
-      <el-button class="btn-next" @click="emit('next')">下一步</el-button>
+      <el-button class="btn-next" :loading="nextLoading" @click="emit('next')">下一步</el-button>
     </div>
   </div>
 </template>

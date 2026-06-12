@@ -46,15 +46,15 @@ defineProps({
     width: 3px;
     background-color: #075DFE;
     display: inline-block;
-    margin-top: 24px;
-    margin-bottom: 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 
   }
 
   .title-text {
     display: inline-flex;
-    margin-top: 24px;
-    margin-bottom: 24px;
+    margin-top: 12px;
+    margin-bottom: 12px;
     margin-left: 8px;
     font-size: 18px;
     color: #075DFE;

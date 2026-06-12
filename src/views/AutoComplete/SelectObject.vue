@@ -1,9 +1,16 @@
 <script setup>
 import { getStudentList, getKnowledgeMastery } from '@/api/index.js'
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { User } from '@element-plus/icons-vue'
 import ScorePie from '../../components/ScorePie.vue'
 import StepLayout from '../../components/StepLayout.vue'
+
+const router = useRouter()
+
+const handleNext = () => {
+  router.push('/auto-complete/done')
+}
 
 const top10Data = [
   { name: '三角函数', rate: 62, distribution: '62' },
@@ -96,8 +103,7 @@ onMounted(() => {
 
 <template>
   <StepLayout :active-step="1" left-top-title="班级整体薄弱top10" left-bottom-title="学生薄弱分布top10" right-title="试卷出题内容概览"
-    title="靶向补弱" second-title="基于学情数据，精准定位薄弱知识点，智能生成个性化练习" @prev="$router.back()"
-    @next="$router.push('/auto-complete/done')">
+    title="靶向补弱" second-title="基于学情数据，精准定位薄弱知识点，智能生成个性化练习" @prev="$router.back()" @next="handleNext">
     <template #leftTopBadge>
       <span style="color: #fff; font-size:15px;">!</span>
     </template>

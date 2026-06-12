@@ -5,12 +5,18 @@ import StepProgress from '@/components/StepProgress.vue'
 import ScorePie from '@/components/ScorePie.vue'
 import RightCard from '@/components/RightCard.vue'
 import { getKnowledgeMastery } from '@/api/index.js'
-import { paperSides } from '@/mock/examPaper.js'
+import page1 from '@/assets/picture/page/Page_1_docsmall.com.jpg'
+import page2 from '@/assets/picture/page/Page_2_docsmall.com.jpg'
+import page3 from '@/assets/picture/page/Page_3_docsmall.com.jpg'
+import page4 from '@/assets/picture/page/Page_4_docsmall.com.jpg'
+import { ArrowLeft, ArrowRight } from '@icon-park/vue-next'
+
+// 试卷
+const page = [page1, page2, page3, page4]
 
 const router = useRouter()
 
 const currentSide = ref(0)
-const paperHtml = computed(() => paperSides[currentSide.value])
 
 // 右侧题型分布
 const typeList = ref([
@@ -20,23 +26,38 @@ const typeList = ref([
   { key: 'shortAnswer', title: '应用探究题', percentage: 70 },
 ])
 
-// 右侧图表
-const knowledgeList = ref([])
+// 右侧知识点覆盖
+const knowledgeList = ref([
+  { key: 'knowledge1', title: '知识点1', percentage: 80 },
+  { key: 'knowledge2', title: '知识点2', percentage: 70 },
+  { key: 'knowledge3', title: '知识点3', percentage: 60 },
+  { key: 'knowledge4', title: '知识点4', percentage: 50 },
+  { key: 'knowledge5', title: '知识点5', percentage: 40 },
+])
+
+// 右侧图表 题型概览
+const knowledgeTypeList = ref([])
 const difficultyStats = ref({ easy: 0, medium: 0, hard: 0 })
 
 const getKnowledge = async () => {
   try {
     const res = await getKnowledgeMastery()
     if (res.code === 200) {
-      knowledgeList.value = res.list
+      knowledgeTypeList.value = res.list
     }
   } catch (error) {
     console.error('获取知识点掌握度失败:', error)
   }
 }
 
+// 生成弹窗
+const showGenerating = ref(true)
+
 onMounted(() => {
   getKnowledge()
+  setTimeout(() => {
+    showGenerating.value = false
+  }, 2000)
 })
 </script>
 
@@ -57,53 +78,82 @@ onMounted(() => {
               <span class="preview-title">试卷预览</span>
             </div>
             <div class="preview-body">
-              <!-- 左侧缩略图 -->
-              <div class="thumbnails">
-                <div class="thumb-group">
-                  <div class="thumb-item" :class="{ active: currentSide === 0 }" @click="currentSide = 0">
-                    <div class="thumb-img"></div>
-                    <div class="thumb-tag" :class="{ active: currentSide === 0 }">1</div>
+              <!-- 左侧缩略图 + 上下翻页 -->
+              <el-card class="thumb-card">
+                <div class="thumbnails-col">
+                  <button class="nav-btn nav-up" :disabled="currentSide === 0" @click="currentSide--">
+                    <span class="nav-arrow">▲</span>
+                  </button>
+                  <div class="thumbnails">
+                    <div class="thumb-group">
+                      <div class="thumb-item" :class="{ active: currentSide === 0 }" @click="currentSide = 0">
+                        <div class="thumb-img">
+                          <img :src="page[0]" class="short-img" />
+                        </div>
+                        <div class="thumb-tag" :class="{ active: currentSide === 0 }">1</div>
+                      </div>
+                      <div class="thumb-item" :class="{ active: currentSide === 1 }" @click="currentSide = 1">
+                        <div class="thumb-img">
+                          <img :src="page[1]" class="short-img" />
+                        </div>
+                        <div class="thumb-tag" :class="{ active: currentSide === 1 }">2</div>
+                      </div>
+                    </div>
+                    <div class="thumb-group">
+                      <div class="thumb-item" :class="{ active: currentSide === 2 }" @click="currentSide = 2">
+                        <div class="thumb-img">
+                          <img :src="page[2]" class="short-img" />
+                        </div>
+                        <div class="thumb-tag" :class="{ active: currentSide === 2 }">3</div>
+                      </div>
+                      <div class="thumb-item" :class="{ active: currentSide === 3 }" @click="currentSide = 3">
+                        <div class="thumb-img">
+                          <img :src="page[3]" class="short-img" />
+                        </div>
+                        <div class="thumb-tag" :class="{ active: currentSide === 3 }">4</div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="thumb-item" :class="{ active: currentSide === 1 }" @click="currentSide = 1">
-                    <div class="thumb-img"></div>
-                    <div class="thumb-tag" :class="{ active: currentSide === 1 }">2</div>
+                  <button class="nav-btn nav-down" :disabled="currentSide === 3" @click="currentSide++">
+                    <span class="nav-arrow">▼</span>
+                  </button>
+                </div>
+              </el-card>
+              <div class="right-card">
+                <!-- 右侧大图预览区 -->
+                <div class="preview-main">
+                  <div class="page-img-wrap"><img :src="page[currentSide]" class="page-img" />
                   </div>
                 </div>
-                <div class="thumb-group">
-                  <div class="thumb-item" :class="{ active: currentSide === 2 }" @click="currentSide = 2">
-                    <div class="thumb-img"></div>
-                    <div class="thumb-tag" :class="{ active: currentSide === 2 }">3</div>
+                <!-- 试卷概览统计 -->
+                <div class="stats-bar">
+                  <div class="page-contain">
+                    <button :disabled="currentSide === 0" @click="currentSide--" class="page-button">
+                      <ArrowLeft />
+                    </button>
+                    <span class="page-info">{{ currentSide + 1 }} / 4 页</span>
+                    <button :disabled="currentSide === 3" @click="currentSide++" class="page-button">
+                      <ArrowRight />
+                    </button>
                   </div>
-                  <div class="thumb-item" :class="{ active: currentSide === 3 }" @click="currentSide = 3">
-                    <div class="thumb-img"></div>
-                    <div class="thumb-tag" :class="{ active: currentSide === 3 }">4</div>
-                  </div>
+                  <button class="fullscreen-btn">
+                    <span class="fs-icon">⛶</span>
+                    全屏预览
+                  </button>
                 </div>
-              </div>
-              <!-- 右侧大图预览区 -->
-              <div class="preview-main">
-                <div class="paper-scroll" v-html="paperHtml"></div>
               </div>
             </div>
-          </div>
-          <!-- 试卷概览统计 -->
-          <div class="stats-bar">
-            <span>{{ currentSide + 1 }} / 4 面</span>
-            <button class="fullscreen-btn">
-              <span class="fs-icon">⛶</span>
-              全屏预览
-            </button>
           </div>
         </el-card>
       </el-col>
       <el-col :span="8" class="right-col">
-        <RightCard title="试卷出题内容概览" style="flex: 1;">
+        <RightCard title="题型概览" style="flex: 1;">
           <div class="overview-section">
-            <h4 class="overview-section-title">试卷总分</h4>
             <ScorePie :center-value="100" center-unit="总分数" :legends="[
-              { color: '#03BC96', name: '容易', value: 1, percent: '0%' },
-              { color: '#1E77FA', name: '中等', value: 2, percent: '0%' },
-              { color: '#FD8F37', name: '困难', value: 3, percent: '0%' },
+              { color: '#03BC96', name: '总分值', value: 1, percent: '0%' },
+              { color: '#1E77FA', name: '考试时长', value: 2, percent: '0%' },
+              { color: '#FD8F37', name: '题量', value: 3, percent: '0%' },
+              { color: '#FD7C9A', name: '覆盖知识点', value: 4, percent: '0%' },
             ]" />
           </div>
           <div class="overview-section">
@@ -115,7 +165,21 @@ onMounted(() => {
                   <span class="type-title">{{ item.title }}</span>
                 </div>
                 <div class="type-footer">
-                  <el-progress :percentage="item.percentage" class="type-progress" />
+                  <el-progress :percentage="item.percentage" color="#075DFE" class="type-progress" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 知识点覆盖 -->
+          <div class="overview-section">
+            <h4 class="overview-section-title">知识点覆盖</h4>
+            <div class="type-grid">
+              <div class="type-item" v-for="item in knowledgeList" :key="item.key">
+                <div class="type-header">
+                  <span class="type-title">{{ item.title }}</span>
+                </div>
+                <div class="type-footer">
+                  <el-progress :percentage="item.percentage" color="#075DFE" class="type-progress" />
                 </div>
               </div>
             </div>
@@ -125,10 +189,39 @@ onMounted(() => {
     </el-row>
 
     <div class="footer-btns">
-      <el-button class="btn-prev" plain @click="router.back()">上一步</el-button>
-      <el-button class="btn-next" @click="() => { }">下一步</el-button>
+      <el-button class="btn-prev" @click="router.back()">完成</el-button>
+      <el-button class="btn-next" @click="() => { }">下载试卷</el-button>
     </div>
   </div>
+
+  <!-- 生成弹窗 -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="showGenerating" class="generating-overlay">
+        <div class="generating-modal">
+          <button class="generating-close" @click="showGenerating = false">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#333" stroke-width="1.5">
+              <path d="M1 1L9 9M9 1L1 9" />
+            </svg>
+          </button>
+          <div class="generating-bars">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+          <div class="generating-text">生成中···</div>
+          <div class="generating-percent">(9%)</div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style lang="scss" scoped>
@@ -176,11 +269,17 @@ onMounted(() => {
 .left-card {
   flex: 1;
   border-radius: 8px;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .left-card :deep(.el-card__body) {
   padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .right-col {
@@ -195,25 +294,29 @@ onMounted(() => {
   justify-content: center;
   margin-top: 12px;
 
-  .btn-prev {
+  .btn-next {
     border: 3px solid #3279fe;
     color: #6198fe;
     width: 200px;
+    height: 40px;
     border-radius: 8px;
   }
 
-  .btn-next {
+  .btn-prev {
     background-color: #075dfe;
     color: white;
     width: 200px;
+    height: 40px;
     border-radius: 8px;
   }
 }
 
 // ---- 左侧：试卷预览 ----
 .preview-section {
-  margin-bottom: 16px;
-  height: 639px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .preview-header {
@@ -221,6 +324,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+  flex-shrink: 0;
 
   .preview-bar {
     width: 3px;
@@ -239,6 +343,8 @@ onMounted(() => {
 .preview-body {
   display: flex;
   gap: 24px;
+  flex: 1;
+  min-height: 0;
 }
 
 .thumbnails {
@@ -280,8 +386,14 @@ onMounted(() => {
     .thumb-img {
       width: 100%;
       height: 100%;
-      background: #F2F2F2;
+      background: #ffffff;
       border-radius: 12px;
+
+      .short-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
     }
 
     .thumb-tag {
@@ -306,52 +418,133 @@ onMounted(() => {
   }
 }
 
+.right-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .preview-main {
   flex: 1;
-  position: relative;
   border: 1px solid #D9D9D9;
   background-color: #f8f9f9;
   border-radius: 12px;
-  min-height: 400px;
-  max-height: 680px;
+  min-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  .page-img-wrap {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+
+    .page-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+
+.preview-placeholder {
+  color: #999;
+  font-size: 16px;
+}
+
+.fullscreen-btn {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  width: 122px;
+  height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #D9D9D9;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 18px;
+  color: #1A1A1A;
+  cursor: pointer;
+
+  .fs-icon {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.thumb-card {
+  width: 204px;
+  flex-shrink: 0;
+  border-radius: 12px;
   overflow: hidden;
+}
+
+.thumb-card :deep(.el-card__body) {
+  padding: 12px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.thumbnails-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-up {
+  top: 0;
+}
+
+.nav-down {
+  bottom: 0;
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #D9D9D9;
+  background: #fff;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
-  .paper-scroll {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    padding: 24px;
-    box-sizing: border-box;
-    font-family: 'SimSun', '宋体', serif;
-  }
+  &:hover:not(:disabled) {
+    background: #075DFE;
+    border-color: #075DFE;
 
-  .preview-placeholder {
-    color: #999;
-    font-size: 16px;
-  }
-
-  .fullscreen-btn {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
-    border: 1px solid #D9D9D9;
-    border-radius: 6px;
-    background: #fff;
-    font-size: 18px;
-    color: #1A1A1A;
-    cursor: pointer;
-
-    .fs-icon {
-      font-size: 24px;
-      color: #666;
+    .nav-arrow {
+      color: #fff;
     }
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .nav-arrow {
+    font-size: 14px;
+    color: #666;
+    line-height: 1;
   }
 }
 
@@ -359,11 +552,33 @@ onMounted(() => {
 .stats-bar {
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   padding: 12px 24px;
-  background: #F8F9FB;
   border-radius: 8px;
-  margin-bottom: 24px;
+  flex-shrink: 0;
+
+  .page-contain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .page-info {
+      font-size: 16px;
+      color: #1A1A1A;
+      margin: 0 16px;
+    }
+
+    .page-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid #CCCCCC;
+
+      &:hover {
+        border-color: #075DFE;
+      }
+    }
+  }
 
   .stat-item {
     display: flex;
@@ -459,10 +674,15 @@ onMounted(() => {
 
 // ---- 右侧样式 ----
 .overview-section {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  +.overview-section {
+    border-top: 1px solid #E5E7EB;
+    padding-top: 8px;
   }
 
   .overview-section-title {
@@ -472,13 +692,13 @@ onMounted(() => {
     line-height: 22px;
     color: #5A6382;
     padding-left: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
 
   .type-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: 3px;
 
     .type-item {
       display: flex;
@@ -521,6 +741,7 @@ onMounted(() => {
         .type-progress {
           flex: 1;
           width: 100%;
+          height: 8px;
         }
 
 
@@ -532,5 +753,144 @@ onMounted(() => {
       }
     }
   }
+}
+
+// 生成弹窗
+.generating-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.generating-modal {
+  position: relative;
+  width: 818px;
+  height: 290px;
+  background: linear-gradient(180deg, #E8E7F9 0%, #FFFFFF 100%);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.generating-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generating-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 70px;
+
+  .bar {
+    width: 6px;
+    border-radius: 99px;
+    background: linear-gradient(180deg, #63CCE8 0%, #5C74F8 27%, #DFA0DC 52%, #5C74F8 75%, #63CCE8 100%);
+    animation: barWave 1.2s ease-in-out infinite;
+
+    &:nth-child(1) {
+      height: 52px;
+      animation-delay: 0s;
+    }
+
+    &:nth-child(2) {
+      height: 28px;
+      animation-delay: 0.1s;
+    }
+
+    &:nth-child(3) {
+      height: 26px;
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(4) {
+      height: 12px;
+      animation-delay: 0.3s;
+    }
+
+    &:nth-child(5) {
+      height: 26px;
+      animation-delay: 0.4s;
+    }
+
+    &:nth-child(6) {
+      height: 12px;
+      animation-delay: 0.5s;
+    }
+
+    &:nth-child(7) {
+      height: 26px;
+      animation-delay: 0.6s;
+    }
+
+    &:nth-child(8) {
+      height: 28px;
+      animation-delay: 0.7s;
+    }
+
+    &:nth-child(9) {
+      height: 52px;
+      animation-delay: 0.8s;
+    }
+
+    &:nth-child(10) {
+      height: 12px;
+      animation-delay: 0.9s;
+    }
+  }
+}
+
+@keyframes barWave {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.generating-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'PingFang SC', sans-serif;
+}
+
+.generating-percent {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  font-family: 'PingFang SC', sans-serif;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
