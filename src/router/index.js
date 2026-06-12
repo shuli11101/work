@@ -28,6 +28,10 @@ const router = createRouter({
           path: '/auto-complete/unit-review',
           component: () => import('@/views/AutoComplete/UnitReview.vue'),
         },
+        {
+          path: '/auto-complete/layer-work',
+          component: () => import('@/views/AutoComplete/LayerWork.vue'),
+        },
       ]
     }
   ]

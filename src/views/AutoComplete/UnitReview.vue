@@ -9,7 +9,7 @@ import StepLayout from '../../components/StepLayout.vue'
 const router = useRouter()
 
 const handleNext = () => {
-  router.push('/auto-complete/done')
+  router.push('/auto-complete/done?from=review')
 }
 
 const reviewList = ref([

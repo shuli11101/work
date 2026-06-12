@@ -9,20 +9,13 @@ import StepLayout from '../../components/StepLayout.vue'
 const router = useRouter()
 
 const handleNext = () => {
-  router.push('/auto-complete/done')
+  router.push('/auto-complete/done?from=layer')
 }
 
-const top10Data = [
-  { name: '三角函数', rate: 62, distribution: '62' },
-  { name: '立体几何', rate: 68, distribution: '68' },
-  { name: '数列', rate: 71, distribution: '71' },
-  { name: '概率统计', rate: 75, distribution: '75' },
-  { name: '解析几何', rate: 78, distribution: '78' },
-  { name: '函数与导数', rate: 55, distribution: '55' },
-  { name: '平面向量', rate: 60, distribution: '60' },
-  { name: '不等式', rate: 65, distribution: '65' },
-  { name: '复数', rate: 80, distribution: '80' },
-  { name: '排列组合', rate: 73, distribution: '73' },
+const studentLayer = [
+  { checked: false, name: '基础层', rate: 62, distribution: '12' },
+  { checked: false, name: '提升层', rate: 68, distribution: '14' },
+  { checked: false, name: '拓展层', rate: 71, distribution: '11' },
 ]
 
 const studentList = ref([])
@@ -102,8 +95,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <StepLayout :active-step="1" left-top-title="班级整体薄弱top10" left-bottom-title="学生薄弱分布top10" right-title="试卷出题内容概览"
-    title="靶向补弱" second-title="基于学情数据，精准定位薄弱知识点，智能生成个性化练习" @prev="$router.back()" @next="handleNext">
+  <StepLayout :active-step="1" left-top-title="班级学生分层概览" left-bottom-title="学生分层明细" right-title="试卷出题内容概览" title="分层作业"
+    second-title="根据学生水平分层出题，因材施教，提高效率" @prev="$router.back()" @next="handleNext">
     <template #leftTopBadge>
       <span style="color: #fff; font-size:15px;">!</span>
     </template>
@@ -113,23 +106,31 @@ onMounted(() => {
       </el-icon>
     </template>
     <template #leftTopBody>
-      <el-table :data="top10Data.sort((a, b) => a.rate - b.rate)" style="width: 100%" size="small" stripe
-        class="knowledge-table">
-        <el-table-column label="知识点" min-width="100">
-          <template #default="{ $index, row }">
-            <span class="head-index">{{ $index + 1 }}</span>
+      <el-table :data="studentLayer" style="width: 100%" size="small" stripe class="knowledge-table">
+        <el-table-column min-width="20">
+          <template #default="{ row }">
+            <el-checkbox v-model="row.checked" @change="handleSelectChange(row)" class="large-checkbox"></el-checkbox>
+          </template>
+        </el-table-column>
+        <el-table-column label="层级" min-width="80" align="center">
+          <template #default="{ row }">
             <span class="knowledge-name">{{ row.name }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="掌握度（平均正确率）" min-width="140">
+        <el-table-column prop="distribution" label="人数" min-width="60" align="center">
           <template #default="{ row }">
-            <el-progress :percentage="row.rate" :stroke-width="8" :format="() => row.rate + '%'"
-              :color="row.rate <= 65 ? '#FD5156' : row.rate <= 75 ? '#FDB05F' : '#03BC96'"
-              style="width: 203px; gap: 12px;" />
+            {{ row.distribution }}人
           </template>
         </el-table-column>
-        <el-table-column prop="distribution" label="未掌握分布" min-width="100" />
-        <el-table-column label="操作" min-width="80">
+        <el-table-column label="平均掌握率" min-width="140" align="center">
+          <template #default="{ row }">
+            <div style="display: flex; justify-content: center;">
+              <el-progress :percentage="row.rate" :stroke-width="8" :format="() => row.rate + '%'"
+                :color="row.rate <= 65 ? '#FD5156' : row.rate <= 75 ? '#FDB05F' : '#03BC96'" style="width: 203px;" />
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" min-width="80" align="center">
           <template #default>
             <el-link type="primary" :underline="false" style="color: #075DFE; font-weight: 600;">查看详情</el-link>
           </template>
@@ -156,13 +157,19 @@ onMounted(() => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="weakPoints" label="薄弱知识点(TOP3)">
+        <el-table-column prop="weakPoints" label="薄弱知识点(TOP3)" min-width="120">
           <template #default="{ row }">
             <el-tag v-for="point in row.weakPoints.slice(0, 3)" :key="point" type="info" size="small"
               style="margin-right: 32px;">
               {{ point }}
             </el-tag>
           </template>
+        </el-table-column>
+        <el-table-column label="推荐层级" align="center">
+          <!-- <template #default="{ row }">
+            <span class="knowledge-name">{{ row.recommendLayer }}</span>
+          </template> -->
+          基础层
         </el-table-column>
       </el-table>
     </template>
@@ -208,6 +215,10 @@ onMounted(() => {
   height: 46px;
   background-color: #F3F6FD;
   font-size: 16px;
+}
+
+.large-checkbox {
+  transform: scale(1.4)
 }
 
 .head-index {

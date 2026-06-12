@@ -172,6 +172,8 @@ const handleSubmit = async () => {
     router.push('/auto-complete/select-object')
   } else if (corePurpose.value?.title === '单元复习') {
     router.push('/auto-complete/unit-review')
+  } else if (corePurpose.value?.title === '分层作业') {
+    router.push('/auto-complete/layer-work')
   }
   console.log('下一步')
 }

@@ -99,8 +99,8 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 48px;
-    padding-left: 70px;
+    row-gap: 32px;
+
 
     .legend-item {
       display: flex;
@@ -111,18 +111,16 @@ onUnmounted(() => {
 
       .dot {
         display: inline-block;
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
       }
 
       .legend-type {
         display: flex;
-        width: 100%;
+        width: 80%;
         align-items: center;
-        gap: 50px;
         justify-content: space-between;
-        width: 200px;
 
         .legend-num {
           display: flex;
