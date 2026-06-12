@@ -34,7 +34,8 @@ const steps = [
   align-items: center;
   justify-content: center;
   gap: 50px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
+  margin-top: 25px;
 }
 
 .step {

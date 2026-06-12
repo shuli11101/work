@@ -23,7 +23,11 @@ const router = createRouter({
         {
           path: '/auto-complete/done',
           component: () => import('@/views/AutoComplete/Done.vue'),
-        }
+        },
+        {
+          path: '/auto-complete/unit-review',
+          component: () => import('@/views/AutoComplete/UnitReview.vue'),
+        },
       ]
     }
   ]

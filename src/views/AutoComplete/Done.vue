@@ -10,6 +10,7 @@ import page2 from '@/assets/picture/page/Page_2_docsmall.com.jpg'
 import page3 from '@/assets/picture/page/Page_3_docsmall.com.jpg'
 import page4 from '@/assets/picture/page/Page_4_docsmall.com.jpg'
 import { ArrowLeft, ArrowRight } from '@icon-park/vue-next'
+import ExamOverview from '@/components/ExamOverview.vue'
 
 // 试卷
 const page = [page1, page2, page3, page4]
@@ -52,6 +53,21 @@ const getKnowledge = async () => {
 
 // 生成弹窗
 const showGenerating = ref(true)
+
+// 点击全屏预览
+const handleOverview = ref(false)
+
+// 点击完成按钮
+const handleComplete = () => {
+  console.log('完成')
+  router.back() // 先用着，后续再处理
+  // 后续操作暂时不处理
+}
+
+// 点击下载试卷按钮
+const handleDownload = () => {
+  console.log('下载试卷')
+}
 
 onMounted(() => {
   getKnowledge()
@@ -136,7 +152,7 @@ onMounted(() => {
                       <ArrowRight />
                     </button>
                   </div>
-                  <button class="fullscreen-btn">
+                  <button class="fullscreen-btn" @click="handleOverview = true">
                     <span class="fs-icon">⛶</span>
                     全屏预览
                   </button>
@@ -189,8 +205,8 @@ onMounted(() => {
     </el-row>
 
     <div class="footer-btns">
-      <el-button class="btn-prev" @click="router.back()">完成</el-button>
-      <el-button class="btn-next" @click="() => { }">下载试卷</el-button>
+      <el-button class="btn-prev" @click="handleComplete">完成</el-button>
+      <el-button class="btn-next" @click="handleDownload">下载试卷</el-button>
     </div>
   </div>
 
@@ -199,11 +215,6 @@ onMounted(() => {
     <Transition name="fade">
       <div v-if="showGenerating" class="generating-overlay">
         <div class="generating-modal">
-          <button class="generating-close" @click="showGenerating = false">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#333" stroke-width="1.5">
-              <path d="M1 1L9 9M9 1L1 9" />
-            </svg>
-          </button>
           <div class="generating-bars">
             <span class="bar"></span>
             <span class="bar"></span>
@@ -221,6 +232,8 @@ onMounted(() => {
         </div>
       </div>
     </Transition>
+    <ExamOverview :pages="page" v-model:visible="handleOverview" />
+
   </Teleport>
 </template>
 
@@ -796,7 +809,7 @@ onMounted(() => {
 
 .generating-bars {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 4px;
   height: 70px;
 

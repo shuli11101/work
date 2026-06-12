@@ -163,10 +163,16 @@ const ruleRules = reactive({
 
 // 点击下一步
 const handleSubmit = async () => {
+
   // await baseFormRef.value.validate()
   // await ruleFormRef.value.validate()
-  router.push('/auto-complete/select-object')
+  // 如果是靶向补弱
   // 提交表单数据
+  if (corePurpose.value?.title === '靶向补弱') {
+    router.push('/auto-complete/select-object')
+  } else if (corePurpose.value?.title === '单元复习') {
+    router.push('/auto-complete/unit-review')
+  }
   console.log('下一步')
 }
 
@@ -523,7 +529,6 @@ onUnmounted(() => {
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  padding-top: 24px;
 }
 
 .form-card {
@@ -759,6 +764,7 @@ onUnmounted(() => {
 .feature-list {
   display: flex;
   gap: 12px;
+  margin-top: 24px;
 }
 
 .sprite-icon {
