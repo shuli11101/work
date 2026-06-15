@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { Check } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import StepProgress from '@/components/StepProgress.vue'
+import UnitDialog from '@/views/AutoComplete/components/UnitDialog.vue'
 import spriteImage1 from '../../assets/picture/001-removebg-preview.png'
 import spriteImage2 from '../../assets/picture/002-removebg-preview.png'
 import spriteImage3 from '../../assets/picture/003-removebg-preview.png'
@@ -117,9 +118,21 @@ const difficulty = [
 ]
 
 // 试卷核心作用
-const corePurpose = ref('')
+const corePurpose = ref(features[0])
 function selectPurpose(item) {
   corePurpose.value = corePurpose.value?.title === item.title ? null : item
+  if (item.title === '单元冲刺') {
+    isUnitReview.value = true
+  }
+}
+
+// 控制单元冲刺dialog
+const isUnitReview = ref(false)
+const handleCloseUnitReview = (chapterList) => {
+  // 后续操作, chapterList 是选中的章节列表
+
+  // 关闭dialog
+  isUnitReview.value = false
 }
 
 // 表单收集数据
@@ -174,6 +187,8 @@ const handleSubmit = async () => {
     router.push('/auto-complete/unit-review')
   } else if (corePurpose.value?.title === '分层作业') {
     router.push('/auto-complete/layer-work')
+  } else if (corePurpose.value?.title === '单元冲刺') {
+    router.push('/auto-complete/unit-review')
   }
   console.log('下一步')
 }
@@ -460,6 +475,8 @@ onUnmounted(() => {
         </el-card>
       </div>
     </el-main>
+    <!-- 单元冲刺dialog -->
+    <UnitDialog v-model:visible="isUnitReview" @close="handleCloseUnitReview" />
   </div>
 </template>
 
