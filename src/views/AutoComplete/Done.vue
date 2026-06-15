@@ -89,16 +89,35 @@ onMounted(() => {
     title.value = '分层作业'
   } else if (route.query.from === 'review') {
     title.value = '单元复习'
+  } else if (route.query.from === 'custom') {
+    title.value = '自定义组卷'
+  } else if (route.query.from === 'monitorGo') {
+    title.value = '冲刺模拟'
   } else {
     title.value = '靶向补弱'
   }
 })
+
+const reTitle = computed(() => {
+  if (route.query.from === 'layer') {
+    return '根据学生水平分层出题，因材施教，提高效率 '
+  } else if (route.query.from === 'review') {
+    return '聚焦单元知识点覆盖，巩围学习成果，提升效率 '
+  } else if (route.query.from === 'custom') {
+    return '自由配置题目类型、题量和难度，满足个性化需求'
+  } else if (route.query.from === 'monitorGo') {
+    return '模拟真实考试场景，针对重点难点进行专项冲刺，提升应试能力'
+  } else {
+    return '基于学情数据，精准定位薄弱知识点，智能生成个性化练习'
+  }
+})
+
 </script>
 
 <template>
   <div class="done-layout">
     <h2 class="page-title">{{ title }}</h2>
-    <span class="second-title">{{ isLayer.value ? '根据学生水平分层作业，因材施教，提高效率' : '基于学情数据，精准定位薄弱知识点，智能生成个性化练习' }}</span>
+    <span class="second-title">{{ reTitle }}</span>
 
     <StepProgress :active="3" />
 

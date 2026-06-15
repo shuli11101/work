@@ -188,7 +188,9 @@ const handleSubmit = async () => {
   } else if (corePurpose.value?.title === '分层作业') {
     router.push('/auto-complete/layer-work')
   } else if (corePurpose.value?.title === '单元冲刺') {
-    router.push('/auto-complete/unit-review')
+    router.push('/auto-complete/monitor-go')
+  } else if (corePurpose.value?.title === '自定义组合') {
+    router.push('/auto-complete/custom')
   }
   console.log('下一步')
 }

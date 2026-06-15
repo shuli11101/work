@@ -32,6 +32,14 @@ const router = createRouter({
           path: '/auto-complete/layer-work',
           component: () => import('@/views/AutoComplete/LayerWork.vue'),
         },
+        {
+          path: '/auto-complete/monitor-go',
+          component: () => import('@/views/AutoComplete/MonitorGo.vue'),
+        },
+        {
+          path: '/auto-complete/custom',
+          component: () => import('@/views/AutoComplete/Custom.vue'),
+        },
       ]
     }
   ]

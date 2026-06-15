@@ -23,6 +23,7 @@ defineProps({
 .left-top-card {
   border-radius: 8px;
   height: 289px;
+  padding-top: 16px;
 
   .card-title {
     font-size: 16px;
