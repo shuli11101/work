@@ -65,7 +65,13 @@ const typeList = ref([
 
 // 右下角覆盖知识点
 const coverKnowledge = computed(() => {
-  return [...new Set(sortStudentList.value.filter(item => item.checked).map(item => item.weakPoints).flat())]
+  const all = sortStudentList.value.flatMap(item => item.weakPoints)
+  const seen = new Set()
+  return all.filter(point => {
+    if (seen.has(point.name)) return false
+    seen.add(point.name)
+    return true
+  })
 })
 
 // 右侧图表
@@ -157,11 +163,11 @@ onMounted(() => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="weakPoints" label="薄弱知识点(TOP3)" min-width="120">
+        <el-table-column prop="weakPoints" label="薄弱知识点(TOP3)" min-width="160">
           <template #default="{ row }">
-            <el-tag v-for="point in row.weakPoints.slice(0, 3)" :key="point" type="info" size="small"
-              style="margin-right: 32px;">
-              {{ point }}
+            <el-tag v-for="point in row.weakPoints" :key="point.name" type="info" size="small"
+              :style="{ backgroundColor: point.backgroundColor, color: point.color, marginRight: '32px', fontWeight: '500', fontSize: '14px', border: 'none', borderRadius: '6px', padding: '4px 8px' }">
+              {{ point.name }}
             </el-tag>
           </template>
         </el-table-column>
@@ -201,8 +207,9 @@ onMounted(() => {
       <div class="overview-section">
         <h4 class="overview-section-title">覆盖知识点（top5）</h4>
         <div class="knowledge-tags">
-          <el-tag v-for="tag in coverKnowledge" :key="tag" type="info" size="small" class="knowledge-tag">
-            {{ tag }}
+          <el-tag v-for="tag in coverKnowledge" :key="tag.name" type="info"
+            :style="{ backgroundColor: tag.backgroundColor, color: tag.color }" size="small" class="knowledge-tag">
+            {{ tag.name }}
           </el-tag>
         </div>
       </div>

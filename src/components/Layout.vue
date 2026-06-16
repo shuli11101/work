@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { HomeFilled, Aim, Fold, Expand } from '@element-plus/icons-vue'
 
@@ -23,24 +23,49 @@ function handleSelect(index) {
 function toggleCollapse() {
   isCollapse.value = !isCollapse.value
 }
+
+// ====== 自适应缩放 ======
+const DESIGN_WIDTH = 1920
+const DESIGN_HEIGHT = 1080
+const scale = ref(1)
+const translateX = ref(0)
+const translateY = ref(0)
+
+function updateScale() {
+  scale.value = Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT)
+  translateX.value = (window.innerWidth - DESIGN_WIDTH * scale.value) / 2
+  translateY.value = (window.innerHeight - DESIGN_HEIGHT * scale.value) / 2
+}
+
+onMounted(() => {
+  updateScale()
+  window.addEventListener('resize', updateScale)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateScale)
+})
 </script>
 
 <template>
-  <el-container class="app-content">
-    <el-aside :width="isCollapse ? '0px' : '200px'"
-      style="background-color: #304156; transition: width 0.3s; overflow: hidden">
-      <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" background-color="#304156"
-        text-color="#bfcbd9" active-text-color="#409eff" @select="handleSelect">
-        <el-menu-item v-for="item in menuItems" :key="item.path" :index="item.path">
-          <el-icon>
-            <component :is="item.icon" />
-          </el-icon>
-          <template #title>{{ item.label }}</template>
-        </el-menu-item>
-      </el-menu>
-    </el-aside>
-    <el-container style="flex-direction: column">
-      <el-header style="
+  <div class="app-shell">
+    <div class="scaled-wrapper"
+      :style="{ transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`, transformOrigin: 'left top' }">
+      <el-container class="app-content">
+        <el-aside :width="isCollapse ? '0px' : '200px'"
+          style="background-color: #304156; transition: width 0.3s; overflow: hidden">
+          <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" background-color="#304156"
+            text-color="#bfcbd9" active-text-color="#409eff" @select="handleSelect">
+            <el-menu-item v-for="item in menuItems" :key="item.path" :index="item.path">
+              <el-icon>
+                <component :is="item.icon" />
+              </el-icon>
+              <template #title>{{ item.label }}</template>
+            </el-menu-item>
+          </el-menu>
+        </el-aside>
+        <el-container style="flex-direction: column">
+          <el-header style="
           height: 50px;
           background-color: #fff;
           display: flex;
@@ -48,29 +73,43 @@ function toggleCollapse() {
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
           z-index: 10;
         ">
-        <el-icon :size="15" style="cursor: pointer; margin-right: 16px" @click="toggleCollapse">
-          <Fold v-if="!isCollapse" />
-          <Expand v-else />
-        </el-icon>
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item :to="{ path: '/' }">{{ currentLabel }}</el-breadcrumb-item>
-          <el-breadcrumb-item v-if="currentLabel">AI</el-breadcrumb-item>
-        </el-breadcrumb>
-      </el-header>
-      <el-main style="background-color: #fff; display: flex; justify-content: center;">
-        <div class="page-container">
-          <router-view />
-        </div>
-      </el-main>
-    </el-container>
-  </el-container>
+            <el-icon :size="15" style="cursor: pointer; margin-right: 16px" @click="toggleCollapse">
+              <Fold v-if="!isCollapse" />
+              <Expand v-else />
+            </el-icon>
+            <el-breadcrumb separator="/">
+              <el-breadcrumb-item :to="{ path: '/' }">{{ currentLabel }}</el-breadcrumb-item>
+              <el-breadcrumb-item v-if="currentLabel">AI</el-breadcrumb-item>
+            </el-breadcrumb>
+          </el-header>
+          <el-main style="background-color: #fff; display: flex; justify-content: center;">
+            <div class="page-container">
+              <router-view />
+            </div>
+          </el-main>
+        </el-container>
+      </el-container>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.app-content {
+.app-shell {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #e8e8e8;
+}
+
+.scaled-wrapper {
   width: 1920px;
   height: 1080px;
-  margin: 0 auto;
+  flex-shrink: 0;
+}
+
+.app-content {
+  width: 100%;
+  height: 100%;
 }
 
 .el-aside {

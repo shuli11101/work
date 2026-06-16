@@ -71,10 +71,13 @@ onUnmounted(() => {
     <div ref="chartRef" class="score-chart"></div>
     <div class="chart-legend">
       <div class="legend-item" v-for="item in legends" :key="item.name">
-        <span class="dot" :style="{ backgroundColor: item.color }"></span>
-        <div class="legend-type">
-          <span :style="{ color: item.color }">{{ item.name }}</span>
-          <span class="legend-num">{{ item.value }}分 ({{ item.percent || '0%' }})</span>
+        <div class="legend-left">
+          <span class="dot" :style="{ backgroundColor: item.color }"></span>
+          <span class="legend-name" :style="{ color: item.color }">{{ item.name }}</span>
+        </div>
+        <div class="legend-stats">
+          <span class="legend-value">{{ item.value }}分</span>
+          <span class="legend-percent">({{ item.percent || '0%' }})</span>
         </div>
       </div>
     </div>
@@ -86,7 +89,7 @@ onUnmounted(() => {
 .score-area {
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 40px;
 
   .score-chart {
     width: 217px;
@@ -99,35 +102,50 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    row-gap: 48px;
+    row-gap: 40px;
 
 
     .legend-item {
       display: flex;
-      justify-self: center;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      height: 22px;
+      font-size: 16px;
       font-weight: 600;
+      font-family: 'PingFang SC', sans-serif;
+      margin-right: 59px;
 
-      .dot {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
+      .legend-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+
+        .dot {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .legend-name {
+          flex-shrink: 0;
+        }
       }
 
-      .legend-type {
+      .legend-stats {
         display: flex;
-        width: 60%;
         align-items: center;
-        justify-content: space-between;
+        gap: 0;
 
-        .legend-num {
-          display: flex;
-          justify-content: center;
-          font-size: 16px;
-          font-weight: 600;
+        .legend-value {
+          color: #1A1A1A;
+        }
+
+        .legend-percent {
+          color: #666666;
+          margin-left: 4px;
         }
       }
     }

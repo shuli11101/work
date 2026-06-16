@@ -202,7 +202,7 @@ const reTitle = computed(() => {
         </div>
       </div>
     </Transition>
-    <ExamOverview :pages="page" v-model:visible="handleOverview" />
+    <ExamOverview :pages="page[0]" v-model:visible="handleOverview" />
   </Teleport>
 </template>
 
