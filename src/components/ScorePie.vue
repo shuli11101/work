@@ -86,7 +86,7 @@ onUnmounted(() => {
 .score-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 60px;
 
   .score-chart {
     width: 217px;
@@ -99,11 +99,12 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    row-gap: 32px;
+    row-gap: 48px;
 
 
     .legend-item {
       display: flex;
+      justify-self: center;
       align-items: center;
       gap: 8px;
       font-size: 14px;
@@ -118,7 +119,7 @@ onUnmounted(() => {
 
       .legend-type {
         display: flex;
-        width: 80%;
+        width: 60%;
         align-items: center;
         justify-content: space-between;
 

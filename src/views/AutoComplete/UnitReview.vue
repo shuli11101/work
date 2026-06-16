@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Notebook, Tickets, User } from '@element-plus/icons-vue'
+import { User } from '@element-plus/icons-vue'
 import { getKnowledgeMastery } from '@/api/index.js'
 import ScorePie from '../../components/ScorePie.vue'
 import StepLayout from '../../components/StepLayout.vue'
@@ -155,22 +155,18 @@ const activeNames = ref([1, 2, 3, 4])
             <span class="structure-title">{{ item.name }}</span>
           </template>
           <div class="knowledge-cards">
-            <div class="knowledge-card" :style="{ backgroundColor: kid.icon === 'Notebook' ? '#FEF6EF' : '#DDE9FF' }"
+            <div class="knowledge-card"
+              :style="{ backgroundColor: kid.icon === 'Notebook' ? '#FEF6EF' : '#DDE9FF', borderColor: kid.icon === 'Notebook' ? 'rgba(253, 129, 3, 0.2)' : 'rgba(30, 119, 250, 0.2)' }"
               v-for="(kid, index) in item.children" :key="index">
               <div class="card-body">
-                <el-icon v-if="kid.icon === 'Notebook'" size="24" style="color: #FD8103">
-                  <Notebook />
-                </el-icon>
-                <el-icon v-else size="24" style="color: #1E77FA">
-                  <Tickets />
-                </el-icon>
-                <span class="card-badge" :style="{ color: kid.icon === 'Notebook' ? '#FD8103' : '#1E77FA' }">
-                  知识点
-                </span>
+                <div class="card-icon-group">
+                  <img v-if="kid.icon === 'Notebook'" src="@/assets/picture/icon-knowledge.svg" class="card-icon-img" />
+                  <img v-else src="@/assets/picture/icon-exam-point.svg" class="card-icon-img" />
+                  <span class="card-badge" :style="{ color: kid.icon === 'Notebook' ? '#FD8103' : '#1B69FA' }">
+                    知识点
+                  </span>
+                </div>
                 <span class="card-separator">丨</span>
-                <span class="card-icon">
-
-                </span>
                 <span class="card-text">{{ kid.text }}</span>
                 <span class="card-count">{{ kid.count }}</span>
               </div>
@@ -306,15 +302,32 @@ const activeNames = ref([1, 2, 3, 4])
 }
 
 .knowledge-card {
-  border: 1px solid rgba(253, 129, 3, 0.2);
+  border: 1px solid;
   border-radius: 12px;
   padding: 8px 16px;
+  height: 44px;
+  box-sizing: border-box;
 }
 
 .card-body {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
+  height: 100%;
+}
+
+.card-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
+.card-icon-img {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .card-badge {
@@ -323,7 +336,6 @@ const activeNames = ref([1, 2, 3, 4])
   gap: 2px;
   font-size: 14px;
   font-weight: 500;
-
   font-family: 'PingFang SC', sans-serif;
   white-space: nowrap;
 }
@@ -332,7 +344,8 @@ const activeNames = ref([1, 2, 3, 4])
   font-size: 14px;
   color: #666666;
   font-family: 'PingFang SC', sans-serif;
-  margin: 0 4px;
+  margin-left: 50px;
+  flex-shrink: 0;
 }
 
 .card-text {
@@ -343,6 +356,7 @@ const activeNames = ref([1, 2, 3, 4])
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-left: 30px;
 }
 
 .card-count {
@@ -351,8 +365,7 @@ const activeNames = ref([1, 2, 3, 4])
   color: #075DFE;
   font-family: 'PingFang SC', sans-serif;
   white-space: nowrap;
-  margin-left: auto;
-  margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .head-index {
