@@ -185,20 +185,28 @@ const reTitle = computed(() => {
     <Transition name="fade">
       <div v-if="showGenerating" class="generating-overlay">
         <div class="generating-modal">
-          <div class="generating-bars">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
+          <!-- 关闭按钮 -->
+          <div class="generating-close" @click="showGenerating = false">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1L9 9M9 1L1 9" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
           </div>
-          <div class="generating-text">生成中···</div>
-          <div class="generating-percent">(9%)</div>
+          <!-- 内容 -->
+          <div class="generating-content">
+            <div class="generating-bars">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </div>
+            <div class="generating-text">生成中···</div>
+            <div class="generating-percent">(9%)</div>
+          </div>
         </div>
       </div>
     </Transition>
@@ -370,5 +378,166 @@ const reTitle = computed(() => {
     height: 40px;
     border-radius: 8px;
   }
+}
+</style>
+
+<style>
+.generating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.generating-modal {
+  position: relative;
+  width: 818px;
+  height: 290px;
+  background: linear-gradient(180deg, rgba(232, 231, 249, 1) 0%, rgba(255, 255, 255, 1) 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.generating-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.generating-content {
+  position: absolute;
+  left: 50%;
+  top: 86px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 70px;
+}
+
+.generating-bars {
+  display: flex;
+  align-items: flex-end;
+  width: 70px;
+  height: 70px;
+  position: relative;
+}
+
+.generating-bars .bar {
+  position: absolute;
+  top: 50%;
+  background: linear-gradient(180deg, rgba(99, 204, 232, 1) 0%, rgba(92, 116, 248, 1) 27%, rgba(223, 160, 220, 1) 52%, rgba(92, 116, 248, 1) 75%, rgba(99, 204, 232, 1) 100%);
+  border-radius: 99px;
+  transform: translateY(-50%);
+  transform-origin: center center;
+  animation: bar-loading 1.2s ease-in-out infinite;
+}
+
+.generating-bars .bar:nth-child(1) {
+  left: 1px;
+  width: 3px;
+  height: 12px;
+  animation-delay: 0s;
+}
+
+.generating-bars .bar:nth-child(2) {
+  left: 6.5px;
+  width: 6px;
+  height: 28px;
+  animation-delay: 0.1s;
+}
+
+.generating-bars .bar:nth-child(3) {
+  left: 15px;
+  width: 6px;
+  height: 52px;
+  animation-delay: 0.2s;
+}
+
+.generating-bars .bar:nth-child(4) {
+  left: 23.5px;
+  width: 6px;
+  height: 26px;
+  animation-delay: 0.3s;
+}
+
+.generating-bars .bar:nth-child(5) {
+  left: 32px;
+  width: 6px;
+  height: 12px;
+  animation-delay: 0.4s;
+}
+
+.generating-bars .bar:nth-child(6) {
+  left: 40.5px;
+  width: 6px;
+  height: 26px;
+  animation-delay: 0.5s;
+}
+
+.generating-bars .bar:nth-child(7) {
+  left: 49px;
+  width: 6px;
+  height: 52px;
+  animation-delay: 0.6s;
+}
+
+.generating-bars .bar:nth-child(8) {
+  left: 57.5px;
+  width: 6px;
+  height: 28px;
+  animation-delay: 0.7s;
+}
+
+.generating-bars .bar:nth-child(9) {
+  left: 66px;
+  width: 3px;
+  height: 12px;
+  animation-delay: 0.8s;
+}
+
+@keyframes bar-loading {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(-50%) scaleY(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scaleY(1);
+  }
+}
+
+.generating-text {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  font-family: 'PingFang SC', sans-serif;
+  white-space: nowrap;
+}
+
+.generating-percent {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #999999;
+  font-family: 'PingFang SC', sans-serif;
 }
 </style>

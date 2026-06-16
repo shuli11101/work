@@ -30,8 +30,7 @@ defineExpose({ open })
 </script>
 
 <template>
-  <el-dialog :model-value="visible" @close="close" width="1796px" height="1270px" destroy-on-close
-    class="exam-overview-dialog">
+  <el-dialog :model-value="visible" @close="close" width="90vw" top="2vh" destroy-on-close class="exam-overview-dialog">
     <div class="exam-overview">
       <div class="sheet-tabs">
         <button v-for="(sheet, index) in sheets" :key="index" class="sheet-tab"
@@ -60,6 +59,8 @@ defineExpose({ open })
 
   :deep(.el-dialog__body) {
     padding: 0;
+    max-height: 90vh;
+    overflow: auto;
   }
 }
 
