@@ -6,9 +6,11 @@ import { HomeFilled, Aim, Fold, Expand } from '@element-plus/icons-vue'
 const router = useRouter()
 const isCollapse = ref(false)
 
+// 侧边栏菜单
 const menuItems = [
   { path: '/home', label: '首页', icon: HomeFilled },
   { path: '/auto-complete', label: 'AI自动组卷', icon: Aim },
+  { path: '/paper-list', label: '试卷列表', icon: Fold },
 ]
 
 const currentLabel = computed(() => {
@@ -54,6 +56,7 @@ onUnmounted(() => {
       <el-container class="app-content">
         <el-aside :width="isCollapse ? '0px' : '200px'"
           style="background-color: #304156; transition: width 0.3s; overflow: hidden">
+          <!-- 侧边栏菜单 -->
           <el-menu :default-active="router.currentRoute.value.path" :collapse="isCollapse" background-color="#304156"
             text-color="#bfcbd9" active-text-color="#409eff" @select="handleSelect">
             <el-menu-item v-for="item in menuItems" :key="item.path" :index="item.path">

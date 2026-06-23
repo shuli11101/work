@@ -12,6 +12,7 @@ const router = createRouter({
           path: '/home',
           component: () => import('@/views/Home.vue')
         },
+        // AI自动组卷
         {
           path: '/auto-complete',
           component: () => import('@/views/AutoComplete/AutoComplete.vue'),
@@ -39,6 +40,11 @@ const router = createRouter({
         {
           path: '/auto-complete/custom',
           component: () => import('@/views/AutoComplete/Custom.vue'),
+        },
+        // 试卷列表
+        {
+          path: '/paper-list',
+          component: () => import('@/views/PaperManage/PaperList.vue'),
         },
       ]
     }
