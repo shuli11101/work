@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import router from '@/router'
 import ExamOverview from '@/components/ExamOverview.vue'
 import page1 from '@/assets/picture/page/Page_1_docsmall.com.jpg'
 import page2 from '@/assets/picture/page/Page_2_docsmall.com.jpg'
@@ -140,6 +141,12 @@ const previewVisible = ref(false)
 const previewPages = ref([page1, page2, page3, page4])
 const handlePreview = () => {
   previewVisible.value = true
+}
+
+// 编辑
+const handleEdit = (row) => {
+  console.log('编辑', row)
+  router.push(`/paper-list/paper-edit/${row.name}`)
 }
 </script>
 
@@ -300,7 +307,7 @@ const handlePreview = () => {
             <div class="action-links">
               <span class="action-link status-link" @click="row.status = '停用'">停用</span>
               <span class="action-link" @click="handlePreview">预览</span>
-              <span class="action-link">编辑</span>
+              <span class="action-link" @click="handleEdit(row)">编辑</span>
               <span class="action-link">下载</span>
             </div>
           </template>
@@ -517,6 +524,7 @@ const handlePreview = () => {
   font-size: 16px;
   font-weight: 600;
   line-height: 32px;
+  color: #075DFE;
 }
 
 .table-header-actions {

@@ -46,6 +46,10 @@ const router = createRouter({
           path: '/paper-list',
           component: () => import('@/views/PaperManage/PaperList.vue'),
         },
+        {
+          path: '/paper-list/paper-edit/:id',
+          component: () => import('@/views/PaperManage/PaperEdit.vue'),
+        }
       ]
     }
   ]
