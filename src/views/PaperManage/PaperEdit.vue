@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue'
 import { getPaperPreview } from '@/api/index'
+import { ElMessage } from 'element-plus'
 import { EditPen } from '@element-plus/icons-vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 const paperName = ref('2026年普通高等学校招生全国统一考试')
 const subtitle = ref('')
@@ -90,18 +92,108 @@ const handleConfirm = () => {
   console.log('确认')
 }
 
+// 换题
+const changeQuestionVisible = ref(false)
+const changeQuestionId = ref(null)
+const selectedQuestion = ref(null)
+
+const replaceQuestions = ref([
+  { id: 'r1', type: 'choice', score: 5, text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是', options: [{ label: 'A', text: '{a|a>-2}' }, { label: 'B', text: '{a|a>-2}' }, { label: 'C', text: '{a|a>-2}' }, { label: 'D', text: '{a|a>-2}' }], padding: '0', marginBottom: 0 },
+  { id: 'r2', type: 'choice', score: 5, text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是', options: [{ label: 'A', text: '{a|a>-2}' }, { label: 'B', text: '{a|a>-2}' }, { label: 'C', text: '{a|a>-2}' }, { label: 'D', text: '{a|a>-2}' }], padding: '0', marginBottom: 0 },
+  { id: 'r3', type: 'choice', score: 5, text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是', options: [{ label: 'A', text: '{a|a>-2}' }, { label: 'B', text: '{a|a>-2}' }, { label: 'C', text: '{a|a>-2}' }, { label: 'D', text: '{a|a>-2}' }], padding: '0', marginBottom: 0 },
+  { id: 'r4', type: 'choice', score: 5, text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是', options: [{ label: 'A', text: '{a|a>-2}' }, { label: 'B', text: '{a|a>-2}' }, { label: 'C', text: '{a|a>-2}' }, { label: 'D', text: '{a|a>-2}' }], padding: '0', marginBottom: 0 },
+])
 const handleChangeQuestion = (qId) => {
+  changeQuestionVisible.value = true
   console.log('换题', qId)
+  changeQuestionId.value = qId
 }
 
-const handleDeleteQuestion = (qId) => {
-  console.log('删除', qId)
+// 确认换题
+const submitChangeQuestion = () => {
+  if (!selectedQuestion.value) {
+    ElMessage.error('请选择题目')
+    return
+  }
+  // 从 groupedQuestions 中删除题目
+  groupedQuestions.value.forEach((cur) => {
+    console.log('换题', cur)
+    console.log('要换的', selectedQuestion.value)
+    const question = cur.questions.find(item => item.id === changeQuestionId.value)
+    if (question) {
+      cur.questions.splice(cur.questions.indexOf(question), 1, selectedQuestion.value)
+      return
+    }
+  })
+
+  changeQuestionVisible.value = false
+  ElMessage.success('换题成功')
+  console.log('确认换题', selectedQuestion.value)
+}
+
+//  换题分页
+const cqCurrentPage = ref(1)
+const cqTotal = computed(() => {
+  return replaceQuestions.value.length
+})
+
+// 删除题目
+const deleteVisible = ref(false)
+const deleteQuestionIndex = ref(0)
+const handleDeleteQuestion = (q) => {
+  deleteVisible.value = true
+  console.log('删除', q)
+  deleteQuestionIndex.value = q.id
+
+}
+
+// 确认删除题目
+const deleteQuestion = () => {
+  // 从 groupedQuestions 中删除题目
+  groupedQuestions.value.forEach((cur) => {
+    const question = cur.questions.find(item => item.id === deleteQuestionIndex.value)
+    if (question) {
+      cur.questions.splice(cur.questions.indexOf(question), 1)
+      return
+    }
+  })
+
+  deleteVisible.value = false
+  ElMessage.success('删除成功')
 }
 
 // 左右联动高亮
 const activeQuestionId = ref(null)
 const handleQuestionClick = (qId) => {
   activeQuestionId.value = qId
+}
+
+// 编辑分组名称
+const groupNameEditVisible = ref(false)
+const groupName = ref('')
+const selectGroup = ref(null)
+const handleEditGroupName = (group) => {
+  groupName.value = ''
+  groupNameEditVisible.value = true
+  selectGroup.value = group
+  console.log('修改分组名称', group.label)
+}
+
+// 确认修改分组名称
+const changeGroupName = () => {
+  if (!groupName.value) {
+    ElMessage.error('请输入题型名称')
+    return
+  }
+  groupNameEditVisible.value = false
+  ElMessage.success('修改分组名称成功')
+  // 更新分组名称
+  groupedQuestions.value.forEach((cur) => {
+    if (cur.type === selectGroup.value.type) {
+      cur.label = groupName.value
+    }
+  })
+  console.log('确认修改分组名称', groupName.value)
 }
 </script>
 
@@ -168,7 +260,8 @@ const handleQuestionClick = (qId) => {
                     <span v-if="idx === 1">二</span>
                     <span v-if="idx === 2">三</span>
                     、{{ group.label }}
-                    <el-icon style="margin-left:6px; margin-right: 50px;vertical-align:-2px">
+                    <el-icon @click.stop="handleEditGroupName(group)"
+                      style="margin-left:6px; margin-right: 50px;vertical-align:-2px">
                       <EditPen />
                     </el-icon>
                     <span style="font-size: 14px" v-if="group.type === 'choice'">本题型共{{ selectScore ||
@@ -219,7 +312,7 @@ const handleQuestionClick = (qId) => {
                   </div>
 
                   <div class="btn" style="display: flex; align-items: center; gap: 8px;">
-                    <button class="btn-toolbar btn-toolbar-delete" @click="handleDeleteQuestion(q.id)">删除</button>
+                    <button class="btn-toolbar btn-toolbar-delete" @click="handleDeleteQuestion(q)">删除</button>
                     <button class="btn-toolbar btn-toolbar-replace" @click="handleChangeQuestion(q.id)">换题</button>
                   </div>
                 </div>
@@ -350,6 +443,85 @@ const handleQuestionClick = (qId) => {
         </div>
       </div>
     </div>
+
+    <!-- 题型分组名称修改 -->
+    <el-dialog title="题型名称修改" v-model="groupNameEditVisible" width="343px" :show-close="false"
+      class="group-name-dialog">
+      <el-input v-model="groupName" placeholder="请输入题型名称" />
+      <template #footer>
+        <span class="dialog-footer">
+          <button class="btn-dialog btn-cancel" @click="groupNameEditVisible = false">取消</button>
+          <button class="btn-dialog btn-confirm" @click="changeGroupName">确认</button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 删除题目 -->
+    <el-dialog v-model="deleteVisible" width="343px" :show-close="false" class="group-name-dialog">
+      <template #header>
+        <span style="display:flex;align-items:center;gap:8px;justify-content:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#FD8103" />
+            <rect x="10.5" y="5" width="3" height="10" rx="1.5" fill="#fff" />
+            <circle cx="12" cy="18" r="1.5" fill="#fff" />
+          </svg>
+          <span>删除题目</span>
+        </span>
+      </template>
+      <span style="color: #000000;"><span style="font-weight: 600;">确定删除第{{ deleteQuestionIndex.slice(-1)
+      }}题</span>。删除后，该试卷的题量以及分数会减少。</span>
+      <template #footer>
+        <span class="dialog-footer">
+          <button class="btn-dialog btn-cancel" @click="deleteVisible = false">取消</button>
+          <button class="btn-dialog btn-confirm" @click="deleteQuestion">确认</button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 换题 -->
+    <el-dialog v-model="changeQuestionVisible" width="876px" class="change-question-dialog">
+      <template #header>
+        <div class="cq-header">
+          <div class="cq-header-left">
+            <span class="cq-title">替换题目</span>
+            <span class="cq-subtitle">第1题 | 单选题</span>
+          </div>
+        </div>
+      </template>
+      <div class="cq-label-row">
+        <span class="cq-label">可替换题目</span>
+        <span class="cq-label-underline"></span>
+      </div>
+      <div class="cq-list">
+        <div class="cq-item" @click="selectedQuestion = q" :class="{ 'active': q === selectedQuestion }"
+          v-for="(q, n) in replaceQuestions" :key="n">
+          <el-radio v-model="selectedQuestion" :value="q" />
+          <div class="cq-item-content">
+            <div class="cq-item-header">
+              <span class="cq-item-num">{{ n + 1 }}.</span>
+              <span class="cq-item-text">{{ q.text }}</span>
+            </div>
+            <div class="cq-item-options">
+              <span class="cq-option" v-for="opt in q.options" :key="opt.label">{{ opt.label }}. {{ opt.text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cq-pagination">
+        <!-- 中文 -->
+        <el-config-provider :locale="zhCn">
+          <el-pagination v-model:current-page="cqCurrentPage" :page-size="[10, 20, 30, 40]" :total="cqTotal"
+            layout="total,sizes, prev, pager, next, jumper" style="width: 100%; display: flex; justify-content: center;"
+            background />
+        </el-config-provider>
+      </div>
+      <template #footer>
+        <span class="cq-footer-btns">
+          <button class="cq-btn cq-btn-cancel" @click="changeQuestionVisible = false">取消</button>
+          <button class="cq-btn cq-btn-confirm" @click="submitChangeQuestion">确认</button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -1090,5 +1262,321 @@ const handleQuestionClick = (qId) => {
 .pp-opt-label {
   font-weight: 700;
   margin-right: 4px;
+}
+</style>
+
+<style lang="scss">
+/* 题型分组名称修改弹窗 - 非 scoped 因 el-dialog teleport */
+.group-name-dialog {
+  --el-dialog-margin-top: 0;
+  top: 50vh;
+  border-radius: 12px;
+
+  .el-dialog__header {
+    text-align: center;
+    padding: 24px 0 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000;
+  }
+
+
+  .el-dialog__body {
+    padding: 28px 17px 0;
+
+
+    .el-input__wrapper {
+      border-radius: 6px;
+      border: 1px solid #D9D9D9;
+      box-shadow: none;
+      padding: 0 12px;
+      height: 36px;
+
+      .el-input__inner {
+        font-size: 14px;
+        color: #000;
+
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+    }
+  }
+
+  .el-dialog__footer {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 80px;
+
+    .dialog-footer {
+      display: inline-flex;
+      gap: 32px;
+
+      .btn-dialog {
+        width: 95px;
+        padding: 4px 16px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 400;
+        border: none;
+        cursor: pointer;
+        line-height: 32px;
+      }
+
+      .btn-cancel {
+        background: #D9D9D9;
+        color: #000;
+      }
+
+      .btn-confirm {
+        background: #075DFE;
+        line-height: 20px;
+        border: none;
+      }
+
+      .btn-cancel-outline {
+        background: #fff;
+        color: #666;
+        border: 1px solid #999;
+      }
+
+      .btn-confirm-delete {
+        background: #0F66F1;
+        color: #fff;
+      }
+    }
+  }
+}
+
+/* 换题弹窗 */
+.change-question-dialog {
+  --el-dialog-margin-top: 0;
+  top: 15vh;
+  height: 789px;
+
+  .el-dialog {
+    border-radius: 12px;
+  }
+
+  .el-dialog__header {
+    padding: 16px 16px 0;
+  }
+
+  .cq-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cq-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cq-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+  }
+
+  .cq-subtitle {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .cq-close {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .el-dialog__body {
+    padding: 0 16px 16px;
+  }
+
+  .cq-label-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+  }
+
+  .cq-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #075DFE;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .cq-label-underline {
+    height: 2px;
+    width: 70px;
+    background: #075DFE;
+    margin: 0 auto;
+  }
+
+  .cq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 570px;
+    overflow-y: auto;
+  }
+
+  .cq-item {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    border: 1px solid #E6E6E6;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+    min-height: 100px;
+
+    .el-radio {
+      margin-right: 10px;
+
+      .el-radio__label {
+        display: none;
+      }
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    &.active {
+      background: #F3F8FE;
+      box-shadow: 0 0 0 2px rgba(7, 93, 254, 0.3);
+    }
+  }
+
+  .cq-radio {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 4px;
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      opacity: 0;
+
+      &:checked+.cq-radio-inner {
+        border-color: #0F66F1;
+        background: #0F66F1;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #fff;
+        }
+      }
+    }
+  }
+
+  .cq-radio-inner {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #D9D9D9;
+    position: relative;
+  }
+
+  .cq-item-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cq-item-header {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .cq-item-num {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
+    font-family: 'Songti SC', serif;
+  }
+
+  .cq-item-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    line-height: 22px;
+    font-family: 'Songti SC', serif;
+    letter-spacing: 5%;
+    line-height: 24px;
+  }
+
+  .cq-item-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+
+  .cq-option {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    font-family: 'Songti SC', serif;
+  }
+
+  .cq-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    min-height: 40px;
+  }
+
+  .el-dialog__footer {
+    padding: 0 16px 16px;
+  }
+
+  .cq-footer-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .cq-btn {
+    width: 95px;
+    padding: 4px 16px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    line-height: 32px;
+    text-align: center;
+  }
+
+  .cq-btn-cancel {
+    background: #D9D9D9;
+    color: #000;
+    border: none;
+  }
+
+  .cq-btn-confirm {
+    background: #075DFE;
+    color: #fff;
+    border: none;
+  }
 }
 </style>
