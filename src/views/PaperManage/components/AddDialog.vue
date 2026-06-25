@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
@@ -164,12 +164,11 @@ const handlePageChange = () => {
 
 // 确认添加
 const handleConfirm = () => {
-  if (selectedQuestions.value.length === 0) {
-    ElMessage.warning('请至少选择一道题目')
-    return
-  }
-  ElMessage.success(`已添加 ${selectedQuestions.value.length} 道题目`)
-  handleClose()
+  ElMessageBox.confirm('确定添加12道题。添加后分数需要手动调整', '添加题型', {
+    confirmBottomText: '确认',
+    cancelButtonText: '取消',
+    customClass: 'my-custom-dialog',
+  })
 }
 
 // 题型选项
@@ -330,6 +329,7 @@ const difficultyOptions = [
       </div>
     </template>
   </el-dialog>
+
 </template>
 
 <style lang="scss" scoped>
@@ -811,5 +811,41 @@ const difficultyOptions = [
       }
     }
   }
+}
+</style>
+
+<style lang="scss">
+.my-custom-dialog {
+  width: 343px;
+}
+
+.my-custom-dialog .el-message-box__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.my-custom-dialog .el-message-box__btns {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center;
+  gap: 12px;
+}
+
+.my-custom-dialog .el-message-box__btns .el-button {
+  margin-left: 0 !important;
+}
+
+
+
+.my-custom-dialog .el-message-box__title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: #333333;
 }
 </style>
