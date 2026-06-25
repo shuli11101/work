@@ -5,6 +5,10 @@ import { ElMessage } from 'element-plus'
 import { EditPen } from '@element-plus/icons-vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
+import AddDialog from './components/AddDialog.vue'
+
+
+
 const paperName = ref('2026年普通高等学校招生全国统一考试')
 const subtitle = ref('')
 const notes = ref('')
@@ -195,6 +199,9 @@ const changeGroupName = () => {
   })
   console.log('确认修改分组名称', groupName.value)
 }
+
+// 添加题目
+const addVisible = ref(true)
 </script>
 
 <template>
@@ -246,7 +253,7 @@ const changeGroupName = () => {
             <span class="toolbar-label">拖动排序</span>
             <div class="toolbar-right">
               <span class="tag tag-gray">按题型自动分组</span>
-              <span class="tag tag-blue">添加题目</span>
+              <span class="tag tag-blue" @click="addVisible = true">添加题目</span>
             </div>
           </div>
 
@@ -469,7 +476,7 @@ const changeGroupName = () => {
         </span>
       </template>
       <span style="color: #000000;"><span style="font-weight: 600;">确定删除第{{ deleteQuestionIndex.slice(-1)
-      }}题</span>。删除后，该试卷的题量以及分数会减少。</span>
+          }}题</span>。删除后，该试卷的题量以及分数会减少。</span>
       <template #footer>
         <span class="dialog-footer">
           <button class="btn-dialog btn-cancel" @click="deleteVisible = false">取消</button>
@@ -522,6 +529,9 @@ const changeGroupName = () => {
         </span>
       </template>
     </el-dialog>
+
+    <!-- 添加题目 -->
+    <AddDialog v-model:visible="addVisible" />
   </div>
 </template>
 
