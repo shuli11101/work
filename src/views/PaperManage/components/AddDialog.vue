@@ -72,6 +72,7 @@ const filters = ref({
 // 题目数据
 const questionData = ref([
   {
+    isChecked: false,
     id: 1,
     text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是',
     options: [
@@ -84,6 +85,7 @@ const questionData = ref([
     difficulty: '中等',
   },
   {
+    isChecked: false,
     id: 2,
     text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是',
     options: [
@@ -96,6 +98,7 @@ const questionData = ref([
     difficulty: '困难',
   },
   {
+    isChecked: false,
     id: 3,
     text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是',
     options: [
@@ -105,9 +108,10 @@ const questionData = ref([
       { label: 'D', text: '{a|a>-2}' },
     ],
     type: '单选题',
-    difficulty: '简单',
+    difficulty: '容易',
   },
   {
+    isChecked: false,
     id: 4,
     text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是',
     options: [
@@ -120,6 +124,7 @@ const questionData = ref([
     difficulty: '中等',
   },
   {
+    isChecked: false,
     id: 5,
     text: '甲、乙两车在同一直道上从同一地点同时出发，它们运动的位移x随时间/变化的关系如图所示，已知甲车由静止开始做匀加速直线运动，乙车做匀速直线运动，图线在5s末时相交，则下列说法不正确的是',
     options: [
@@ -133,7 +138,7 @@ const questionData = ref([
   },
 ])
 
-// 已选题目
+// 已选单元
 const selectedQuestions = computed(() => {
   let total = 0
   unitsList.value.forEach(unit => {
@@ -147,6 +152,17 @@ const selectedQuestions = computed(() => {
   return total
 })
 
+// 已选题目
+const selectedTest = computed(() => {
+  let total = 0
+  questionData.value.forEach(row => {
+    if (row.isChecked) {
+      total++
+    }
+  })
+  return total
+})
+
 // 表格选中行
 const selectedRows = ref([])
 const handleSelectionChange = (rows) => {
@@ -155,7 +171,7 @@ const handleSelectionChange = (rows) => {
 
 // 分页
 const page = ref(1)
-const pageSize = ref(5)
+const pageSize = ref(10)
 const total = ref(questionData.value.length)
 
 const handlePageChange = () => {
@@ -167,6 +183,7 @@ const handleConfirm = () => {
   ElMessageBox.confirm('确定添加12道题。添加后分数需要手动调整', '添加题型', {
     confirmBottomText: '确认',
     cancelButtonText: '取消',
+    showClose: false,
     customClass: 'my-custom-dialog',
   })
 }
@@ -251,7 +268,7 @@ const difficultyOptions = [
         </div>
       </div>
 
-      <!-- 右侧 顶部 -->
+      <!-- 右侧 -->
       <div class="right-content">
         <!-- 筛选栏 -->
         <div class="filter-bar">
@@ -275,48 +292,55 @@ const difficultyOptions = [
 
         <!-- 右侧：题目列表 -->
         <div class="question-list">
-          <el-table :data="questionData" style="width: 100%" @selection-change="handleSelectionChange"
-            :header-cell-style="{ background: '#F6F8FE' }">
+          <el-table :data="questionData" style="width: 100%" height="100%" highlight-current-row
+            @selection-change="handleSelectionChange" :header-cell-style="{ background: '#F6F8FE' }"
+            :row-style="{ height: '126px' }">
             <el-table-column min-width="300" class="question-table-column">
+              <template #header>
+                <div class="header-text">
+                  题目名称
+                  <span class="selected-count">已选择{{ selectedTest }}道题</span>
+                </div>
+              </template>
               <template #default="{ row }">
-                <div class="q-header">
-                  <el-checkbox v-model="row.isChecked" class="q-checkbox"></el-checkbox>
-                  <div class="q-text">
-                    {{ row.id }}.{{ row.text }}
+                <div class="q-container">
+                  <div class="q-header">
+                    <el-checkbox v-model="row.isChecked" class="q-checkbox"></el-checkbox>
+                    <div class="q-text">
+                      {{ row.id }}.{{ row.text }}
+                    </div>
+                  </div>
+                  <div class="q-options">
+                    <span v-for="opt in row.options" :key="opt.label" class="q-option">
+                      <span class="q-opt-label">{{ opt.label }}.</span>
+                      <span>{{ opt.text }}</span>
+                    </span>
                   </div>
                 </div>
-                <div class="q-options">
-                  <span v-for="opt in row.options" :key="opt.label" class="q-option">
-                    <span class="q-opt-label">{{ opt.label }}.</span>
-                    <span>{{ opt.text }}</span>
-                  </span>
-                </div>
               </template>
             </el-table-column>
-            <el-table-column label="题型" width="100">
+            <el-table-column label="题型" width="100" align="center">
               <template #default="{ row }">
-                <el-button size="small" round>{{ row.type }}</el-button>
+                <el-button size="small" type="primary" style="border-radius: 6px;">{{ row.type }}</el-button>
               </template>
             </el-table-column>
-            <el-table-column label="难度" width="100">
+            <el-table-column label="难度" width="100" align="center">
               <template #default="{ row }">
-                <el-button size="small" round>{{ row.difficulty }}</el-button>
+                <el-button size="small" style="border-radius: 6px;">{{ row.difficulty }}</el-button>
               </template>
             </el-table-column>
           </el-table>
         </div>
 
-        <!-- 分页 -->
-
       </div>
     </div>
-
     <template #footer>
+      <!-- 分页 -->
       <div class="dialog-footer">
         <div class="pagination-wrapper">
           <el-config-provider :locale="zhCn">
-            <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total"
-              layout="total, sizes, prev, pager, next, jumper" @current-change="handlePageChange"
+            <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
+              :total="total" layout="total, sizes, prev, pager, next, jumper" @current-change="handlePageChange"
               @size-change="handlePageChange" background />
           </el-config-provider>
         </div>
@@ -347,7 +371,7 @@ const difficultyOptions = [
 
   :deep(.el-dialog__body) {
     padding: 16px 24px 0;
-    height: calc(896px - 120px);
+    flex: 1;
   }
 
   :deep(.el-dialog__footer) {
@@ -371,6 +395,7 @@ const difficultyOptions = [
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 723px;
 
   .left-header {
     display: flex;
@@ -571,7 +596,8 @@ const difficultyOptions = [
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden auto;
+  height: 723px;
 }
 
 .filter-bar {
@@ -610,17 +636,38 @@ const difficultyOptions = [
   flex: 1;
   overflow-y: auto;
   padding: 10px;
-  width: 100%;
+  width: 98%;
+
+  .header-text {
+    font-family: 'PingFang SC', sans-serif;
+    margin-left: 38px;
+    color: #000000;
+    font-size: 16px;
+    font-weight: 600;
+
+    .selected-count {
+      color: #075DFE;
+      font-size: 14px;
+      margin-left: 12px;
+    }
+  }
 }
 
-.question-list :deep(.el-table .cell) {
-  white-space: normal;
-  word-break: break-word;
-}
 
 
 
 /* 表格内题目文本与选项 */
+.q-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.question-list :deep(.el-table__row.current-row .q-container) {
+  box-shadow: 0 0 4px 0 #075DFE;
+}
+
 .q-header {
   display: flex;
   gap: 8px;
@@ -634,14 +681,16 @@ const difficultyOptions = [
   line-height: 32px;
   letter-spacing: 0.05em;
   word-break: break-word;
+}
 
-  :deep(.el-checkbox__inner) {
-    border-radius: 50%;
-  }
+/* 表格内复选框圆形 */
+.question-list :deep(.q-container .q-checkbox .el-checkbox__inner) {
+  border-radius: 50%;
 }
 
 .q-options {
   display: flex;
+  justify-content: space-around;
   flex-wrap: wrap;
   gap: 12px 100px;
   margin-top: 8px;
@@ -680,13 +729,18 @@ const difficultyOptions = [
   gap: 12px;
   width: 100%;
   height: 40px;
-  margin-top: 80px;
+  margin-top: 33px;
 
   .dialog-btn {
     display: flex;
     align-items: center;
     gap: 12px;
   }
+}
+
+.pagination-wrapper :deep(.el-pagination.is-background .el-pager li.is-active) {
+  background: #0059ff;
+  color: #fff;
 }
 
 .btn-cancel {
@@ -815,8 +869,23 @@ const difficultyOptions = [
 </style>
 
 <style lang="scss">
+.add-question-dialog {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  height: 896px;
+}
+
 .my-custom-dialog {
   width: 343px;
+  border-radius: 12px;
+}
+
+.my-custom-dialog .el-message-box__title {
+  margin-top: 12px;
+  color: #000000;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .my-custom-dialog .el-message-box__content {
@@ -826,18 +895,36 @@ const difficultyOptions = [
   align-items: center;
   font-size: 14px;
   font-weight: 500;
+  margin-bottom: 30px;
+  margin-top: 10px;
+  padding: 0 24px;
+  color: #000000;
 }
 
 .my-custom-dialog .el-message-box__btns {
   display: flex !important;
   justify-content: center !important;
   align-items: center;
-  gap: 12px;
+  gap: 32px;
 }
 
+// 按钮颜色
 .my-custom-dialog .el-message-box__btns .el-button {
   margin-left: 0 !important;
 }
+
+// 取消按钮颜色
+.el-button {
+  background-color: #D9D9D9;
+  color: #000000;
+}
+
+// 确认按钮颜色
+.el-button--primary {
+  background-color: #075DFE;
+  color: #fff;
+}
+
 
 
 

@@ -292,7 +292,8 @@ const handleEdit = (row) => {
             批量删除</button>
         </div>
       </div>
-      <el-table :data="bottomTableData" style="width: 100%" stripe @selection-change="handleSelectionChange">
+      <el-table :data="bottomTableData" style="width: 100%" stripe @selection-change="handleSelectionChange"
+        :header-cell-style="{ fontWeight: '600', color: '#000000' }">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="name" label="试卷名称" min-width="200" />
         <el-table-column prop="subject" label="科目名称" min-width="100" />
@@ -365,6 +366,7 @@ const handleEdit = (row) => {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   padding: 24px;
   background: #fff;
@@ -381,6 +383,8 @@ const handleEdit = (row) => {
 .stat-info {
   display: flex;
   flex-direction: column;
+  align-items: start;
+  width: max-content;
   gap: 4px;
 }
 

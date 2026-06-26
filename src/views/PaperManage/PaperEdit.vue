@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, onMounted, computed, reactive, nextTick } from 'vue'
 import { getPaperPreview } from '@/api/index'
 import { ElMessage } from 'element-plus'
 import { EditPen } from '@element-plus/icons-vue'
@@ -201,7 +201,63 @@ const changeGroupName = () => {
 }
 
 // 添加题目
-const addVisible = ref(true)
+const addVisible = ref(false)
+
+// 拖拽排序
+const dragState = ref({ fromGroupIdx: null, fromQIdx: null, dragType: null }) // dragType: 'group' | 'question'
+const onDragStart = (e, group, qIdx, groupIdx) => {
+  dragState.value = { fromGroupIdx: groupIdx, fromQIdx: qIdx, dragType: 'question' }
+  e.dataTransfer.effectAllowed = 'move'
+}
+const onDragOver = (e, group, qIdx, groupIdx) => {
+  e.currentTarget.style.outline = '2px dashed #075DFE'
+  e.currentTarget.style.outlineOffset = '-2px'
+  e.currentTarget.style.borderRadius = '8px'
+}
+const onDragLeave = (e) => {
+  e.currentTarget.style.outline = ''
+  e.currentTarget.style.outlineOffset = ''
+  e.currentTarget.style.borderRadius = ''
+}
+const onDrop = (e, toGroup, toQIdx, toGroupIdx) => {
+  e.currentTarget.style.outline = ''
+  e.currentTarget.style.outlineOffset = ''
+  e.currentTarget.style.borderRadius = ''
+
+  const { fromGroupIdx, fromQIdx, dragType } = dragState.value
+  if (fromGroupIdx === null || fromQIdx === null) return
+  if (dragType === 'question') {
+    if (fromGroupIdx === toGroupIdx && fromQIdx === toQIdx) return
+    const question = groupedQuestions.value[fromGroupIdx].questions.splice(fromQIdx, 1)[0]
+    groupedQuestions.value[toGroupIdx].questions.splice(toQIdx, 0, question)
+  }
+}
+
+// 题型组拖拽排序
+const onGroupDragStart = (e, groupIdx) => {
+  dragState.value = { fromGroupIdx: groupIdx, fromQIdx: null, dragType: 'group' }
+  e.dataTransfer.effectAllowed = 'move'
+}
+const onGroupDragOver = (e, groupIdx) => {
+  e.currentTarget.style.outline = '2px dashed #075DFE'
+  e.currentTarget.style.outlineOffset = '-2px'
+  e.currentTarget.style.borderRadius = '8px'
+}
+const onGroupDragLeave = (e) => {
+  e.currentTarget.style.outline = ''
+  e.currentTarget.style.outlineOffset = ''
+  e.currentTarget.style.borderRadius = ''
+}
+const onGroupDrop = (e, toGroupIdx) => {
+  e.currentTarget.style.outline = ''
+  e.currentTarget.style.outlineOffset = ''
+  e.currentTarget.style.borderRadius = ''
+
+  const { fromGroupIdx, dragType } = dragState.value
+  if (dragType !== 'group' || fromGroupIdx === null || fromGroupIdx === toGroupIdx) return
+  const item = groupedQuestions.value.splice(fromGroupIdx, 1)[0]
+  groupedQuestions.value.splice(toGroupIdx, 0, item)
+}
 </script>
 
 <template>
@@ -247,7 +303,7 @@ const addVisible = ref(true)
             <textarea v-model="notes" class="field-textarea" placeholder="请输入注意事项"></textarea>
           </div>
 
-          <!-- 工具栏 -->
+          <!-- 左侧 - 下面-->
           <span class="topbar-title">题目排版</span>
           <div class="toolbar-row">
             <span class="toolbar-label">拖动排序</span>
@@ -257,11 +313,23 @@ const addVisible = ref(true)
             </div>
           </div>
 
-          <!-- 题目卡片 - 按题型分组 -->
+          <!-- 左侧 - 下面 - 按题型分组 -->
           <el-collapse v-model="activeTypeGroups" class="q-collapse">
-            <el-collapse-item v-for="(group, idx) in groupedQuestions" :key="group.type" :name="group.type">
+            <el-collapse-item v-for="(group, idx) in groupedQuestions" :key="group.type" :name="group.type"
+              @dragover.prevent="onGroupDragOver($event, idx)" @drop.prevent="onGroupDrop($event, idx)"
+              @dragleave="onGroupDragLeave">
               <template #title>
-                <span style="display:flex;align-items:center;width:100%">
+                <span :class="['q-title-wrap', 'q-title-wrap-' + idx]" draggable="true"
+                  @dragstart="onGroupDragStart($event, idx)" @dragover.prevent="onGroupDragOver($event, idx)"
+                  @drop.prevent="onGroupDrop($event, idx)" @dragleave="onGroupDragLeave">
+                  <svg class="drag-handle" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <rect x="0" y="3" width="4" height="4" rx="1" fill="#CCCCCC" />
+                    <rect x="10" y="3" width="4" height="4" rx="1" fill="#CCCCCC" />
+                    <rect x="0" y="9" width="4" height="4" rx="1" fill="#CCCCCC" />
+                    <rect x="10" y="9" width="4" height="4" rx="1" fill="#CCCCCC" />
+                    <rect x="0" y="15" width="4" height="4" rx="1" fill="#CCCCCC" />
+                    <rect x="10" y="15" width="4" height="4" rx="1" fill="#CCCCCC" />
+                  </svg>
                   <span>
                     <span v-if="idx === 0">一</span>
                     <span v-if="idx === 1">二</span>
@@ -271,8 +339,8 @@ const addVisible = ref(true)
                       style="margin-left:6px; margin-right: 50px;vertical-align:-2px">
                       <EditPen />
                     </el-icon>
-                    <span style="font-size: 14px" v-if="group.type === 'choice'">本题型共{{ selectScore ||
-                      0 }}分</span>
+                    <span style="font-size: 14px;" v-if="group.type === 'choice'">本题型共{{ selectScore
+                      || 0 }}分</span>
                     <span style="font-size: 14px;" v-else-if="group.type === 'fill'">本题型共{{ fillScore || 0 }}分</span>
                     <span style="font-size: 14px;" v-else>本题型共{{ shortAnswerScore || 0 }}分</span>
                   </span>
@@ -283,8 +351,11 @@ const addVisible = ref(true)
                 </span>
               </template>
               <div class="question-card" v-for="(q, qIdx) in group.questions" :key="q.id"
-                :class="{ active: activeQuestionId === q.id }" @click="handleQuestionClick(q.id)">
-                <!-- 题目工具栏 -->
+                :class="{ active: activeQuestionId === q.id }" @click="handleQuestionClick(q.id)" draggable="true"
+                @dragstart="onDragStart($event, group, qIdx, idx)"
+                @dragover.prevent="onDragOver($event, group, qIdx, idx)"
+                @drop.prevent="onDrop($event, group, qIdx, idx)" @dragleave="onDragLeave">
+                <!-- 每个题目的详细部分 -->
                 <div class="q-toolbar">
                   <svg class="drag-handle" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <rect x="5.5" y="3" width="4" height="18" rx="1" fill="#CCCCCC" />
@@ -333,11 +404,18 @@ const addVisible = ref(true)
       <div class="edit-divider"></div>
       <div class="edit-sidebar">
         <div class="preview-card">
-          <div class="preview-header">试卷预览</div>
           <div class="preview-body" v-if="paperData">
             <div class="paper-preview-content">
+              <!-- 绝密：启用前 -->
+              <div class="pp-secret">
+                <div>绝密★启用前</div>
+                <img src="@/assets/picture/2d-code.png" alt="">
+              </div>
               <!-- 试卷标题 -->
-              <div class="pp-title">{{ paperData.name }}</div>
+              <div class="pp-title">
+                {{ paperData.name }}
+                <div style="font-size: 28px; letter-spacing: 30px;">数学</div>
+              </div>
               <!-- 顶部答题人信息 + 贴条码区 -->
               <div class="edit-card-header">
                 <div class="student-info">
@@ -499,6 +577,16 @@ const addVisible = ref(true)
         <span class="cq-label">可替换题目</span>
         <span class="cq-label-underline"></span>
       </div>
+      <div class="cq-label-alert">
+        <div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" fill="#EE0000" />
+            <path d="M8 4.5V9" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            <circle cx="8" cy="11" r="0.8" fill="white" />
+          </svg>
+        </div>
+        <div style="padding-bottom: 8px;">默认当前题条件一致的题目</div>
+      </div>
       <div class="cq-list">
         <div class="cq-item" @click="selectedQuestion = q" :class="{ 'active': q === selectedQuestion }"
           v-for="(q, n) in replaceQuestions" :key="n">
@@ -536,6 +624,15 @@ const addVisible = ref(true)
 </template>
 
 <style lang="scss" scoped>
+.question-card[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
+
+.question-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .paper-edit {
   height: 100%;
   display: flex;
@@ -629,8 +726,9 @@ const addVisible = ref(true)
 .edit-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 24px;
+  gap: 24px;
 }
 
 .barcode-right {
@@ -642,14 +740,14 @@ const addVisible = ref(true)
 .student-info {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 .info-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 154px;
+  width: 140px;
 }
 
 .info-label {
@@ -726,7 +824,7 @@ const addVisible = ref(true)
   align-items: center;
   border-bottom: 1px solid #1A1A1A;
   padding-left: 10px;
-  column-gap: 10px;
+  column-gap: 3px;
 
   &:last-child {
     border-bottom: none;
@@ -1056,8 +1154,34 @@ const addVisible = ref(true)
 
 .q-collapse :deep(.el-collapse-item__arrow) {
   order: -1;
-  margin-right: 8px;
+  margin-right: 0;
   margin-left: 0;
+}
+
+/* 拖拽手柄在折叠箭头左边 */
+.q-collapse :deep(.el-collapse-item__header) {
+  position: relative;
+  padding-left: 28px;
+}
+
+.q-collapse .q-title-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  cursor: grab;
+  user-select: none;
+}
+
+.q-collapse .q-title-wrap:active {
+  cursor: grabbing;
+}
+
+.q-collapse .q-title-wrap .drag-handle {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
 }
 
 .q-collapse :deep(.el-collapse-item__wrap) {
@@ -1187,16 +1311,24 @@ const addVisible = ref(true)
   font-family: 'FangSong_GB2312', 'FangSong', serif;
   color: #1A1A1A;
   line-height: 1.8;
+
+  .pp-secret {
+    display: flex;
+    flex-direction: column;
+    width: 88px;
+    height: 88px;
+  }
 }
 
 .pp-title {
   text-align: center;
-  font-family: 'SimHei', 'Heiti SC', 'Microsoft YaHei', sans-serif;
-  font-size: 20px;
+  font-family: 'Songti SC', serif;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 32px;
+  line-height: 40px;
+  color: #1A1A1A;
   letter-spacing: 0.05em;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .pp-section-notice {
@@ -1292,7 +1424,7 @@ const addVisible = ref(true)
 
 
   .el-dialog__body {
-    padding: 28px 17px 0;
+    padding: 28px 10px 0;
 
 
     .el-input__wrapper {
@@ -1365,7 +1497,7 @@ const addVisible = ref(true)
 .change-question-dialog {
   --el-dialog-margin-top: 0;
   top: 15vh;
-  height: 789px;
+  height: 820px;
 
   .el-dialog {
     border-radius: 12px;
@@ -1373,6 +1505,7 @@ const addVisible = ref(true)
 
   .el-dialog__header {
     padding: 16px 16px 0;
+    margin-bottom: 10px;
   }
 
   .cq-header {
@@ -1411,6 +1544,16 @@ const addVisible = ref(true)
     padding: 0 16px 16px;
   }
 
+  .cq-label-alert {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #EE0000;
+    font-size: 14px;
+    margin-top: 12px;
+
+  }
+
   .cq-label-row {
     display: flex;
     flex-direction: column;
@@ -1421,7 +1564,6 @@ const addVisible = ref(true)
     font-size: 14px;
     font-weight: 600;
     color: #075DFE;
-    text-align: center;
     margin-bottom: 4px;
   }
 
@@ -1429,14 +1571,12 @@ const addVisible = ref(true)
     height: 2px;
     width: 70px;
     background: #075DFE;
-    margin: 0 auto;
   }
 
   .cq-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    height: 570px;
+    gap: 10px;
     overflow-y: auto;
   }
 
@@ -1444,7 +1584,7 @@ const addVisible = ref(true)
     display: flex;
     gap: 0;
     align-items: flex-start;
-    border: 1px solid #E6E6E6;
+    margin: 2px;
     border-radius: 8px;
     padding: 12px;
     background: #fff;
@@ -1464,7 +1604,7 @@ const addVisible = ref(true)
 
     &.active {
       background: #F3F8FE;
-      box-shadow: 0 0 0 2px rgba(7, 93, 254, 0.3);
+      box-shadow: 0 0 4px 0px #075DFE;
     }
   }
 
@@ -1588,5 +1728,78 @@ const addVisible = ref(true)
     color: #fff;
     border: none;
   }
+}
+
+
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  /* 让试卷居中，或者你可以调整位置 */
+  padding: 20px;
+}
+
+.exam-paper {
+  position: relative;
+  /* 关键：成为 SVG 的定位参考 */
+  width: 210mm;
+  /* 或者你需要的宽度，比如 A4 大小 */
+  min-height: 297mm;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  /* 如果试卷在右侧，可以用 margin-left: auto; 或 flex 控制 */
+}
+
+/* SVG 覆盖整个试卷容器 */
+.markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* 让鼠标可以穿透点击试卷内容 */
+  z-index: 1;
+}
+
+/* 四个角的定位点 */
+.corner {
+  position: absolute;
+  /* 或者直接用 rect 的 x/y 属性 */
+}
+
+/* 用 rect 的 x/y 属性定位，或者用 CSS 的 top/left */
+.markers .tl {
+  x: 5mm;
+  y: 5mm;
+}
+
+.markers .tr {
+  x: calc(100% - 11mm);
+  y: 5mm;
+}
+
+.markers .bl {
+  x: 5mm;
+  y: calc(100% - 11mm);
+}
+
+.markers .br {
+  x: calc(100% - 11mm);
+  y: calc(100% - 11mm);
+}
+
+/* 试卷内容 */
+.content {
+  padding: 20mm;
+  position: relative;
+  z-index: 2;
+  /* 确保内容在 SVG 上层 */
+}
+</style>
+
+<style lang="scss">
+.cq-pagination .el-pagination.is-background .el-pager li.is-active {
+  background: #075DFE !important;
+  color: #fff !important;
 }
 </style>
