@@ -9,7 +9,6 @@ import page1 from '@/assets/picture/page/Page_1_docsmall.com.jpg'
 import page2 from '@/assets/picture/page/Page_2_docsmall.com.jpg'
 import page3 from '@/assets/picture/page/Page_3_docsmall.com.jpg'
 import page4 from '@/assets/picture/page/Page_4_docsmall.com.jpg'
-import ExamOverview from '@/components/ExamOverview.vue'
 import ExamPreview from '@/components/ExamPreview.vue'
 
 // 试卷
@@ -210,7 +209,6 @@ const reTitle = computed(() => {
         </div>
       </div>
     </Transition>
-    <ExamOverview :pages="page[0]" v-model:visible="handleOverview" />
   </Teleport>
 </template>
 

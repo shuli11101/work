@@ -2,7 +2,6 @@
 import { computed, ref } from 'vue'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import router from '@/router'
-import ExamOverview from '@/components/ExamOverview.vue'
 import page1 from '@/assets/picture/page/Page_1_docsmall.com.jpg'
 import page2 from '@/assets/picture/page/Page_2_docsmall.com.jpg'
 import page3 from '@/assets/picture/page/Page_3_docsmall.com.jpg'
@@ -324,8 +323,6 @@ const handleEdit = (row) => {
 
     </div>
   </div>
-
-  <ExamOverview :pages="previewPages" v-model:visible="previewVisible" />
 </template>
 
 <style lang="scss" scoped>

@@ -8,9 +8,10 @@ const isCollapse = ref(false)
 
 // 侧边栏菜单
 const menuItems = [
-  { path: '/home', label: '首页', icon: HomeFilled },
+  { path: '/home', label: '尚学星AI助理', icon: HomeFilled },
   { path: '/auto-complete', label: 'AI自动组卷', icon: Aim },
   { path: '/paper-list', label: '试卷列表', icon: Fold },
+
 ]
 
 const currentLabel = computed(() => {

@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, reactive, nextTick } from 'vue'
 import { getPaperPreview } from '@/api/index'
 import { ElMessage } from 'element-plus'
-import { EditPen } from '@element-plus/icons-vue'
+import { EditPen, FullScreen } from '@element-plus/icons-vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 import AddDialog from './components/AddDialog.vue'
@@ -202,6 +202,131 @@ const changeGroupName = () => {
 
 // 添加题目
 const addVisible = ref(false)
+
+// 全屏预览
+const previewVisible = ref(false)
+const previewCurrentPage = ref(0)
+const previewPages = ref([])
+const previewMeasuring = ref(false)
+const measureRef = ref(null)
+
+const previewBlocks = computed(() => {
+  const blocks = [{ type: 'header' }]
+  const secs = paperData.value?.sections || []
+  secs.forEach((section, sIdx) => {
+    const label = typeLabels[section.type] || section.title || ''
+    blocks.push({ type: 'section', label, sIdx })
+      ; (section.questions || []).forEach((q, qIdx) => {
+        blocks.push({ type: 'question', question: q, qIdx, sIdx, isFirst: qIdx === 0 })
+      })
+  })
+  return blocks
+})
+
+const previewTotalPages = computed(() => previewPages.value.length)
+
+const handlePreview = async () => {
+  console.log('handlePreview called', paperData.value?.sections?.length)
+  previewVisible.value = true
+  previewCurrentPage.value = 0
+
+  // Show all content on page 1 immediately
+  const allIdx = previewBlocks.value.map((_, i) => i)
+  previewPages.value = [{ left: allIdx, right: [] }]
+
+  // Wait for render
+  await new Promise(resolve => setTimeout(resolve, 200))
+
+  const dialog = document.querySelector('.exam-overview-dialog')
+  if (!dialog) {
+    console.log('no dialog')
+    return
+  }
+  const sideWidth = Math.floor((dialog.clientWidth - 2) / 2)
+  // Each side is A3 portrait: width × 420/297, slightly reduced for screen fit
+  const SIDE_HEIGHT = Math.round(sideWidth * 420 / 297 * 0.85)
+  const pageHeight = SIDE_HEIGHT // no padding
+  console.log('dialogW', dialog.clientWidth, 'sideW', sideWidth, 'sideH', SIDE_HEIGHT, 'pageH', pageHeight)
+
+  // Set fixed height via CSS variable (applies to ALL eo-page elements)
+  dialog.style.setProperty('--eo-page-height', pageHeight + 'px')
+
+  // Measure using the rendered left side directly
+  await nextTick()
+  const sideEl = document.querySelector('.exam-overview .eo-side')
+  if (!sideEl) {
+    console.log('no side el')
+    return
+  }
+
+  // Get all direct child blocks in the left side (header, section titles, questions)
+  const childEls = sideEl.querySelectorAll('.eo-header-block, .eo-section-title, .eo-question')
+  const hArr = []
+  childEls.forEach(el => {
+    let h = el.offsetHeight || 0
+    // .eo-question has margin-bottom:16px which is NOT in offsetHeight
+    if (el.classList.contains('eo-question')) h += 16
+    hArr.push(h)
+  })
+  console.log('child count', childEls.length, 'hArr', hArr)
+  console.log('total content H', hArr.reduce((a, b) => a + b, 0))
+
+  // Split (header is always index 0, at the top)
+  const sides = []
+  let cur = []
+  let h = hArr[0] || 300 // header block height (includes .eo-header-block)
+  let bi = 1 // start from block after header
+
+  for (let i = 1; i < previewBlocks.value.length; i++) {
+    const block = previewBlocks.value[i]
+    if (block.type === 'section') {
+      const bh = hArr[bi] || 50
+      bi++
+      if (h + bh > SIDE_HEIGHT && h > 0) {
+        console.log('SPLIT at block', i, 'h', h, 'bh', bh, 'SIDE_HEIGHT', SIDE_HEIGHT)
+        sides.push(cur)
+        cur = []
+        h = 0
+      }
+      cur.push(i)
+      h += bh
+    } else if (block.type === 'question') {
+      const bh = hArr[bi] || 50
+      bi++
+      if (h + bh > SIDE_HEIGHT && h > 0) {
+        console.log('SPLIT at q block', i, 'h', h, 'bh', bh, 'SIDE_HEIGHT', SIDE_HEIGHT)
+        sides.push(cur)
+        cur = []
+        h = 0
+      }
+      cur.push(i)
+      h += bh
+    } else {
+      cur.push(i)
+    }
+  }
+  if (cur.length) sides.push(cur)
+  if (!sides.length) sides.push([])
+
+  // Force exactly 4 sides (2 pages), pad empty ones
+  while (sides.length < 4) sides.push([])
+  const finalSides = sides.slice(0, 4)
+
+  const pages = [
+    { left: [0, ...finalSides[0]], right: finalSides[1] || [] },
+    { left: finalSides[2] || [], right: finalSides[3] || [] },
+  ]
+
+  console.log('pages', pages, 'sideH', SIDE_HEIGHT, 'sidesCount', sides.length)
+  previewPages.value = pages
+}
+
+const prevPage = () => {
+  if (previewCurrentPage.value > 0) previewCurrentPage.value--
+}
+const nextPage = () => {
+  if (previewCurrentPage.value < previewTotalPages.value - 1) previewCurrentPage.value++
+}
 
 // 拖拽排序
 const dragState = ref({ fromGroupIdx: null, fromQIdx: null, dragType: null }) // dragType: 'group' | 'question'
@@ -404,7 +529,7 @@ const onGroupDrop = (e, toGroupIdx) => {
       <div class="edit-divider"></div>
       <div class="edit-sidebar">
         <div class="preview-card">
-          <div class="preview-body" v-if="paperData">
+          <div class="preview-body" v-if="paperData" @click="handlePreview">
             <div class="paper-preview-content">
               <!-- 绝密：启用前 -->
               <div class="pp-secret">
@@ -525,6 +650,12 @@ const onGroupDrop = (e, toGroupIdx) => {
           <div class="preview-body" v-else>
             <div class="preview-loading">加载中...</div>
           </div>
+          <div class="preview-footer" @click.stop="handlePreview">
+            <el-icon style="margin-right:4px">
+              <FullScreen />
+            </el-icon>
+            全屏预览
+          </div>
         </div>
       </div>
     </div>
@@ -554,7 +685,7 @@ const onGroupDrop = (e, toGroupIdx) => {
         </span>
       </template>
       <span style="color: #000000;"><span style="font-weight: 600;">确定删除第{{ deleteQuestionIndex.slice(-1)
-          }}题</span>。删除后，该试卷的题量以及分数会减少。</span>
+      }}题</span>。删除后，该试卷的题量以及分数会减少。</span>
       <template #footer>
         <span class="dialog-footer">
           <button class="btn-dialog btn-cancel" @click="deleteVisible = false">取消</button>
@@ -620,6 +751,255 @@ const onGroupDrop = (e, toGroupIdx) => {
 
     <!-- 添加题目 -->
     <AddDialog v-model:visible="addVisible" />
+
+    <!-- 全屏预览 -->
+    <el-dialog :model-value="previewVisible" @close="previewVisible = false" width="100vw" top="0"
+      class="exam-overview-dialog">
+      <!-- Page navigation -->
+      <div class="eo-pages-nav" v-if="previewTotalPages > 1">
+        <button class="eo-nav-btn" :disabled="previewCurrentPage === 0" @click="prevPage">← 上一页</button>
+        <span class="eo-nav-info">第 {{ previewCurrentPage + 1 }} / {{ previewTotalPages }} 页</span>
+        <button class="eo-nav-btn" :disabled="previewCurrentPage === previewTotalPages - 1" @click="nextPage">下一页
+          →</button>
+      </div>
+
+      <!-- Loading state -->
+      <div v-if="previewMeasuring" class="eo-loading">
+        <span>加载中...</span>
+      </div>
+
+      <!-- Page display -->
+      <template v-for="(page, pIdx) in previewPages" :key="pIdx">
+        <div v-show="pIdx === previewCurrentPage && !previewMeasuring" class="exam-overview">
+          <div class="eo-page">
+            <div class="eo-side">
+              <!-- Left side blocks -->
+              <template v-for="(bi, bIdx) in page.left" :key="'l-' + bi">
+                <template v-if="previewBlocks[bi]?.type === 'header'">
+                  <div class="eo-header-block">
+                    <div class="eo-secret">
+                      <div>绝密★启用前</div>
+                      <img src="@/assets/picture/2d-code.png" alt="">
+                    </div>
+                    <div class="eo-title">
+                      {{ paperName }}
+                      <div style="font-size: 28px; letter-spacing: 30px;">数学</div>
+                    </div>
+                    <div class="eo-header">
+                      <div class="eo-student-info">
+                        <div class="eo-info-row">
+                          <span class="eo-info-label">姓名</span>
+                          <span class="eo-info-underline"></span>
+                        </div>
+                        <div class="eo-info-row">
+                          <span class="eo-info-label">班级</span>
+                          <span class="eo-info-underline"></span>
+                        </div>
+                        <div class="eo-info-row">
+                          <span class="eo-info-label">学号</span>
+                          <span class="eo-info-underline"></span>
+                        </div>
+                      </div>
+                      <div class="eo-barcode-right">
+                        <div class="eo-barcode-grid">
+                          <div class="eo-barcode-col">
+                            <svg class="eo-barcode-star" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path
+                                d="M8 0L10.472 5.528L16 6.944L12 11.416L12.944 17L8 14.472L3.056 17L4 11.416L0 6.944L5.528 5.528L8 0Z"
+                                fill="#1A1A1A" />
+                            </svg>
+                            <span class="eo-barcode-label">短<br />学<br />号</span>
+                          </div>
+                          <div class="eo-barcode-rows">
+                            <div class="eo-barcode-row">
+                              <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                            </div>
+                            <div class="eo-barcode-row">
+                              <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                            </div>
+                            <div class="eo-barcode-row">
+                              <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                            </div>
+                            <div class="eo-barcode-row">
+                              <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="eo-barcode-area">贴条码区域</div>
+                      </div>
+                    </div>
+                    <div class="eo-notice">
+                      <span>注意事项：</span>
+                      <p>1.答卷前，考生务必将自己的姓名、准考证号、座位号填写在答题卡和试卷指定位置上。</p>
+                      <p>2. 作答选择题时，选出每小题答案后，用 2B 铅笔把答题卡上对应题目的答案标号涂黑；如需改动，用橡皮擦干净后，再选涂其他答案标号。写在试卷上的答案无效。</p>
+                      <p>3. 作答非选择题时，必须使用黑色字迹的签字笔或钢笔在答题卡各题目的答题区域内书写，超出答题区域书写的答案无效；不得使用铅笔、红色笔或涂改液（修正带）修改。</p>
+                      <p>4. 保持答题卡整洁，不得折叠、污损，严禁在答题卡上作任何标记。</p>
+                      <p>5. 考试结束后，将本试卷和答题卡一并交回。</p>
+                      <p>6.注意事项补充（视考试而定）：允许使用直尺、圆规、三角板，但不得使用计算器（除非特别注明）。本卷可能包含附加题，附加题得分计入总分（或不计入，请留意说明）。</p>
+                    </div>
+                  </div>
+                </template>
+                <div v-else-if="previewBlocks[bi]?.type === 'section'" class="eo-section-title">{{
+                  previewBlocks[bi]?.label }}</div>
+                <div v-else-if="previewBlocks[bi]?.type === 'question'" class="eo-question">
+                  <div v-if="previewBlocks[bi]?.question?.type === 'choice'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                  <div v-if="previewBlocks[bi]?.question?.type === 'choice' && previewBlocks[bi]?.question?.options"
+                    class="eo-options">
+                    <span v-for="opt in previewBlocks[bi]?.question?.options" :key="opt.label" class="eo-option">
+                      <span class="eo-opt-label">{{ opt.label }}.</span>
+                      <span>{{ opt.text }}</span>
+                    </span>
+                  </div>
+                  <div v-else-if="previewBlocks[bi]?.question?.type === 'fill'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                  <div v-else-if="previewBlocks[bi]?.question?.type === 'shortAnswer'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="eo-divider"></div>
+
+            <div class="eo-side">
+              <!-- Right side blocks -->
+              <template v-for="(bi, bIdx) in page.right" :key="'r-' + bi">
+                <div v-if="previewBlocks[bi]?.type === 'section'" class="eo-section-title">{{ previewBlocks[bi]?.label
+                  }}</div>
+                <div v-else-if="previewBlocks[bi]?.type === 'question'" class="eo-question">
+                  <div v-if="previewBlocks[bi]?.question?.type === 'choice'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                  <div v-if="previewBlocks[bi]?.question?.type === 'choice' && previewBlocks[bi]?.question?.options"
+                    class="eo-options">
+                    <span v-for="opt in previewBlocks[bi]?.question?.options" :key="opt.label" class="eo-option">
+                      <span class="eo-opt-label">{{ opt.label }}.</span>
+                      <span>{{ opt.text }}</span>
+                    </span>
+                  </div>
+                  <div v-else-if="previewBlocks[bi]?.question?.type === 'fill'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                  <div v-else-if="previewBlocks[bi]?.question?.type === 'shortAnswer'" class="eo-q-text">
+                    <span>{{ previewBlocks[bi].qIdx + 1 }}.</span>
+                    <span>({{ previewBlocks[bi]?.question?.score }}分)</span>
+                    {{ previewBlocks[bi]?.question?.text }}
+                  </div>
+                </div>
+              </template>
+              <div v-if="!page.right || page.right.length === 0" class="eo-side-empty"></div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Hidden measurement area -->
+      <div ref="measureRef" class="eo-measure">
+        <template v-for="(block, bi) in previewBlocks" :key="'m-' + bi">
+          <div class="eo-measure-block">
+            <template v-if="block.type === 'header'">
+              <div class="eo-secret">
+                <div>绝密★启用前</div>
+                <img src="@/assets/picture/2d-code.png" alt="">
+              </div>
+              <div class="eo-title">
+                {{ paperName }}
+                <div style="font-size: 28px; letter-spacing: 30px;">数学</div>
+              </div>
+              <div class="eo-header">
+                <div class="eo-student-info">
+                  <div class="eo-info-row">
+                    <span class="eo-info-label">姓名</span>
+                    <span class="eo-info-underline"></span>
+                  </div>
+                  <div class="eo-info-row">
+                    <span class="eo-info-label">班级</span>
+                    <span class="eo-info-underline"></span>
+                  </div>
+                  <div class="eo-info-row">
+                    <span class="eo-info-label">学号</span>
+                    <span class="eo-info-underline"></span>
+                  </div>
+                </div>
+                <div class="eo-barcode-right">
+                  <div class="eo-barcode-grid">
+                    <div class="eo-barcode-col">
+                      <svg class="eo-barcode-star" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path
+                          d="M8 0L10.472 5.528L16 6.944L12 11.416L12.944 17L8 14.472L3.056 17L4 11.416L0 6.944L5.528 5.528L8 0Z"
+                          fill="#1A1A1A" />
+                      </svg>
+                      <span class="eo-barcode-label">短<br />学<br />号</span>
+                    </div>
+                    <div class="eo-barcode-rows">
+                      <div class="eo-barcode-row">
+                        <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                      </div>
+                      <div class="eo-barcode-row">
+                        <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                      </div>
+                      <div class="eo-barcode-row">
+                        <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                      </div>
+                      <div class="eo-barcode-row">
+                        <span v-for="n in 10" :key="n - 1" class="eo-barcode-cell">[{{ n - 1 }}]</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="eo-barcode-area">贴条码区域</div>
+                </div>
+              </div>
+              <div class="eo-notice">
+                <span>注意事项：</span>
+                <p>1.答卷前，考生务必将自己的姓名、准考证号、座位号填写在答题卡和试卷指定位置上。</p>
+                <p>2. 作答选择题时，选出每小题答案后，用 2B 铅笔把答题卡上对应题目的答案标号涂黑；如需改动，用橡皮擦干净后，再选涂其他答案标号。写在试卷上的答案无效。</p>
+                <p>3. 作答非选择题时，必须使用黑色字迹的签字笔或钢笔在答题卡各题目的答题区域内书写，超出答题区域书写的答案无效；不得使用铅笔、红色笔或涂改液（修正带）修改。</p>
+                <p>4. 保持答题卡整洁，不得折叠、污损，严禁在答题卡上作任何标记。</p>
+                <p>5. 考试结束后，将本试卷和答题卡一并交回。</p>
+                <p>6.注意事项补充（视考试而定）：允许使用直尺、圆规、三角板，但不得使用计算器（除非特别注明）。本卷可能包含附加题，附加题得分计入总分（或不计入，请留意说明）。</p>
+              </div>
+            </template>
+            <div v-else-if="block.type === 'section'" class="eo-section-title">{{ block.label }}</div>
+            <div v-else-if="block.type === 'question'" class="eo-question">
+              <div v-if="block.question?.type === 'choice'" class="eo-q-text">
+                <span>{{ block.qIdx + 1 }}.</span>
+                <span>({{ block.question?.score }}分)</span>
+                {{ block.question?.text }}
+              </div>
+              <div v-if="block.question?.type === 'choice' && block.question?.options" class="eo-options">
+                <span v-for="opt in block.question?.options" :key="opt.label" class="eo-option">
+                  <span class="eo-opt-label">{{ opt.label }}.</span>
+                  <span>{{ opt.text }}</span>
+                </span>
+              </div>
+              <div v-else-if="block.question?.type === 'fill'" class="eo-q-text">
+                <span>{{ block.qIdx + 1 }}.</span>
+                <span>({{ block.question?.score }}分)</span>
+                {{ block.question?.text }}
+              </div>
+              <div v-else-if="block.question?.type === 'shortAnswer'" class="eo-q-text">
+                <span>{{ block.qIdx + 1 }}.</span>
+                <span>({{ block.question?.score }}分)</span>
+                {{ block.question?.text }}
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -1299,6 +1679,24 @@ const onGroupDrop = (e, toGroupIdx) => {
   min-height: 0;
 }
 
+.preview-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-top: 1px solid #eee;
+  cursor: pointer;
+  color: #075DFE;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.preview-footer:hover {
+  background: #f5f7fa;
+}
+
 .preview-loading {
   color: #999;
   font-size: 14px;
@@ -1801,5 +2199,320 @@ const onGroupDrop = (e, toGroupIdx) => {
 .cq-pagination .el-pagination.is-background .el-pager li.is-active {
   background: #075DFE !important;
   color: #fff !important;
+}
+</style>
+
+<style>
+.exam-overview-dialog .el-dialog {
+  max-width: 100vw;
+  margin: 0 auto;
+}
+
+.exam-overview-dialog .el-dialog__header {
+  display: none;
+}
+
+.exam-overview-dialog .el-dialog__body {
+  padding: 0;
+}
+
+.exam-overview {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.eo-paper {
+  padding: 24px;
+  font-family: 'FangSong_GB2312', 'FangSong', serif;
+  color: #1A1A1A;
+  line-height: 1.8;
+}
+
+.eo-empty {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.eo-secret {
+  display: flex;
+  flex-direction: column;
+  width: 88px;
+  height: 88px;
+}
+
+.eo-title {
+  text-align: center;
+  font-family: 'Songti SC', serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 40px;
+  color: #1A1A1A;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.eo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-bottom: 24px;
+  gap: 24px;
+}
+
+.eo-student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.eo-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+
+.eo-info-label {
+  width: 28px;
+  font-family: 'FangSong_GB2312', 'FangSong', serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1A1A1A;
+  flex-shrink: 0;
+}
+
+.eo-info-underline {
+  flex: 1;
+  height: 0;
+  border-bottom: 1px solid #1A1A1A;
+}
+
+.eo-barcode-right {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.eo-barcode-grid {
+  width: 306px;
+  height: 123px;
+  border: 1px solid #1A1A1A;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.eo-barcode-col {
+  width: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-right: 1px solid #1A1A1A;
+  flex-shrink: 0;
+}
+
+.eo-barcode-star {
+  flex-shrink: 0;
+}
+
+.eo-barcode-label {
+  font-family: 'KaiTi_GB2312', 'KaiTi', serif;
+  font-size: 12px;
+  line-height: 18px;
+  color: #1A1A1A;
+  text-align: center;
+}
+
+.eo-barcode-rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.eo-barcode-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #1A1A1A;
+  padding-left: 10px;
+  column-gap: 3px;
+}
+
+.eo-barcode-row:last-child {
+  border-bottom: none;
+}
+
+.eo-barcode-cell {
+  width: 22px;
+  height: 18px;
+  font-family: 'FZLanTingHeiPro_GB18030', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5em;
+  color: #1A1A1A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eo-barcode-area {
+  width: 306px;
+  height: 122px;
+  border: 1px dashed #1A1A1A;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  letter-spacing: 1.1em;
+  color: #1A1A1A;
+  flex-shrink: 0;
+}
+
+.eo-notice {
+  width: 100%;
+  font-family: 'PingFang SC', sans-serif;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.eo-notice span {
+  font-size: large;
+}
+
+.eo-notice p {
+  margin: 0;
+}
+
+.eo-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  line-height: 24px;
+}
+
+.eo-question {
+  margin-bottom: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.eo-q-text {
+  font-family: 'Songti SC', 'SimSun', serif;
+  font-size: 15px;
+  line-height: 28px;
+  color: #1A1A1A;
+  margin-bottom: 8px;
+}
+
+.eo-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 60px;
+  font-family: 'Songti SC', 'SimSun', serif;
+  font-size: 14px;
+  line-height: 26px;
+  color: #1A1A1A;
+}
+
+.eo-option {
+  display: flex;
+  gap: 4px;
+}
+
+.eo-opt-label {
+  font-weight: 600;
+}
+
+/* ===== Page navigation ===== */
+
+.eo-pages-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.eo-nav-btn {
+  padding: 6px 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.eo-nav-btn:hover:not(:disabled) {
+  border-color: #075DFE;
+  color: #075DFE;
+}
+
+.eo-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.eo-nav-info {
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+}
+
+.eo-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 16px;
+  color: #999;
+}
+
+/* ===== Page layout ===== */
+.eo-page {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  min-height: 0;
+  height: var(--eo-page-height);
+  overflow: hidden;
+}
+
+.eo-side {
+  flex: 1;
+  width: 50%;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+.eo-divider {
+  width: 2px;
+  background: #D9D9D9;
+  flex-shrink: 0;
+  margin: 0 12px;
+}
+
+.eo-side-empty {
+  min-height: 100px;
+}
+
+.eo-measure {
+  visibility: hidden;
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
 }
 </style>
